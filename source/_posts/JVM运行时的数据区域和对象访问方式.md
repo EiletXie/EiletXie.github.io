@@ -4,7 +4,7 @@ date: 2019-08-01 20:18:33
 tags:
 - JVM
 categories:
-- JAVA
+- Java
 ---
 
 ## 基本概念
@@ -17,12 +17,12 @@ categories:
 
 Java虚拟机将其管理的内存划分为若干个不同的数据区域，我们通过对线程、进程经过每个数据区域的作用来了解JVM
 
-
+<!--more-->
 
 运行经过的数据区如图所示：
 
 {% asset_img b1.jpg 数据区 %}
-<!--more-->
+
 
 **程序计数器（Program Counter Register）:**
 

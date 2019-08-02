@@ -4,7 +4,7 @@ date: 2019-08-01 20:18:33
 tags:
 - JVM
 categories:
-- Java
+- JAVA
 ---
 
 ## 基本概念

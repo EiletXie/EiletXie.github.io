@@ -4,7 +4,7 @@ date: 2019-08-02 13:51:30
 tags:
 - web
 categories:
-- Java
+- JAVA
 ---
 
 # Ajax，json多数据传输以及解析

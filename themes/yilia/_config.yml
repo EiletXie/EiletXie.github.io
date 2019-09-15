@@ -133,11 +133,8 @@ busuanzi:
     enable: true
 
 friends:
-  友情链接1: http://localhost:4000/
-  友情链接2: http://localhost:4000/
-  友情链接3: http://localhost:4000/
-  友情链接4: http://localhost:4000/
-  友情链接5: http://localhost:4000/
-  友情链接6: http://localhost:4000/
+  CSDN: https://blog.csdn.net/xc121566
+  Blog: http://www.eiletxie.cn/
+  LeetCode: https://leetcode-cn.com/u/eiletxie
 
-aboutme: 很惭愧<br><br>只做了一点微小的工作<br>谢谢大家
+aboutme: 是一个有趣又疯狂的家伙<br>哈哈哈

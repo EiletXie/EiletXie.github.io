@@ -3,8 +3,6 @@ title: JVM内存溢出Demo与JDK版本的关联
 date: 2019-09-16 13:12:22
 tags:
 - JVM
-categories:
-- JAVA
 toc: true
 
 ---

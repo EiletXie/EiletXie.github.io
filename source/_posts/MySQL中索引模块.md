@@ -4,8 +4,6 @@ date: 2019-10-07 09:00:04
 tags:
 - MySQL
 - 索引
-categories:
-- 数据库
 toc: true
 
 ---

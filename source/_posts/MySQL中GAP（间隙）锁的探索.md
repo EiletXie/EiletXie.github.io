@@ -3,8 +3,6 @@ title: MySQL中GAP（间隙）锁的探索
 date: 2019-10-07 08:46:00
 tags:
 - MySQL
-categories:
-- 数据库
 toc: true
 ---
 

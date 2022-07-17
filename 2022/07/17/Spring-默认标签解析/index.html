@@ -6,24 +6,22 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <link rel="dns-prefetch" href="http://120.79.219.152">
-  <title>MySQL打怪之路 | EiletXie Blog</title>
+  <title>Spring-默认标签解析 | EiletXie Blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="​       ​    最近花时间看了一部分的《高性能MySQL》 红宝书，以及 丁奇大佬的 《MySQL实战45讲》，对 MySQL的理解又加深了不少，要保持日常MySQL的高性能，避免犯一些低级错误，需要我们对 MySQL的体系结构、逻辑设计、每个模块都有一定的理解，这里便萌生了写几篇总结的博客的想法。 ​        计划是针对各个重要的模块分别做 知识点总结以及高性能需要注意的点的阐述">
-<meta name="keywords" content="MySQL">
+  <meta name="description" content="Spring的标签包括默认标签和自定义标签两种，本文章主要来分析默认标签的解析过程。 默认标签的解析在 parseDefaultElement函数中进行，主要分为四类标签，import、alias、bean、beans，每种对应不同的处理方式。">
+<meta name="keywords" content="Spring">
 <meta property="og:type" content="article">
-<meta property="og:title" content="MySQL打怪之路">
-<meta property="og:url" content="http://120.79.219.152/2020/11/28/MySQL打怪之路/index.html">
+<meta property="og:title" content="Spring-默认标签解析">
+<meta property="og:url" content="http://120.79.219.152/2022/07/17/Spring-默认标签解析/index.html">
 <meta property="og:site_name" content="EiletXie Blog">
-<meta property="og:description" content="​       ​    最近花时间看了一部分的《高性能MySQL》 红宝书，以及 丁奇大佬的 《MySQL实战45讲》，对 MySQL的理解又加深了不少，要保持日常MySQL的高性能，避免犯一些低级错误，需要我们对 MySQL的体系结构、逻辑设计、每个模块都有一定的理解，这里便萌生了写几篇总结的博客的想法。 ​        计划是针对各个重要的模块分别做 知识点总结以及高性能需要注意的点的阐述">
+<meta property="og:description" content="Spring的标签包括默认标签和自定义标签两种，本文章主要来分析默认标签的解析过程。 默认标签的解析在 parseDefaultElement函数中进行，主要分为四类标签，import、alias、bean、beans，每种对应不同的处理方式。">
 <meta property="og:locale" content="default">
-<meta property="og:image" content="http://120.79.219.152/2020/11/28/MySQL打怪之路/b1.jpg">
-<meta property="og:image" content="http://120.79.219.152/2020/11/28/MySQL打怪之路/b2.jpg">
-<meta property="og:image" content="http://120.79.219.152/2020/11/28/MySQL打怪之路/b3.jpg">
-<meta property="og:updated_time" content="2020-11-28T11:50:57.443Z">
+<meta property="og:image" content="http://120.79.219.152/2022/07/17/Spring-默认标签解析/BeanDefinition.png">
+<meta property="og:updated_time" content="2022-07-17T09:39:47.644Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="MySQL打怪之路">
-<meta name="twitter:description" content="​       ​    最近花时间看了一部分的《高性能MySQL》 红宝书，以及 丁奇大佬的 《MySQL实战45讲》，对 MySQL的理解又加深了不少，要保持日常MySQL的高性能，避免犯一些低级错误，需要我们对 MySQL的体系结构、逻辑设计、每个模块都有一定的理解，这里便萌生了写几篇总结的博客的想法。 ​        计划是针对各个重要的模块分别做 知识点总结以及高性能需要注意的点的阐述">
-<meta name="twitter:image" content="http://120.79.219.152/2020/11/28/MySQL打怪之路/b1.jpg">
+<meta name="twitter:title" content="Spring-默认标签解析">
+<meta name="twitter:description" content="Spring的标签包括默认标签和自定义标签两种，本文章主要来分析默认标签的解析过程。 默认标签的解析在 parseDefaultElement函数中进行，主要分为四类标签，import、alias、bean、beans，每种对应不同的处理方式。">
+<meta name="twitter:image" content="http://120.79.219.152/2022/07/17/Spring-默认标签解析/BeanDefinition.png">
   
     <link rel="alternative" href="/atom.xml" title="EiletXie Blog" type="application/atom+xml">
   
@@ -155,14 +153,14 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            <article id="post-MySQL打怪之路" class="article article-type-post " itemscope itemprop="blogPost">
+            <article id="post-Spring-默认标签解析" class="article article-type-post " itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
         
   
     <h1 class="article-title" itemprop="name">
-      MySQL打怪之路
+      Spring-默认标签解析
     </h1>
   
 
@@ -173,122 +171,58 @@
               <i class="icon-smile icon"></i> 阅读数：<span id="busuanzi_value_page_pv"></span>次
         </span>
 
-<a href="/2020/11/28/MySQL打怪之路/" class="archive-article-date">
-  	<time datetime="2020-11-28T11:31:01.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-11-28</time>
+<a href="/2022/07/17/Spring-默认标签解析/" class="archive-article-date">
+  	<time datetime="2022-07-17T09:32:45.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-07-17</time>
 </a>
         
       </header>
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>​      </p>
-<p>​    最近花时间看了一部分的《高性能MySQL》 红宝书，以及 丁奇大佬的 《MySQL实战45讲》，对 MySQL的理解又加深了不少，要保持日常MySQL的高性能，避免犯一些低级错误，需要我们对 MySQL的体系结构、逻辑设计、每个模块都有一定的理解，这里便萌生了写几篇总结的博客的想法。</p>
-<p>​        计划是针对各个重要的模块分别做 知识点总结以及高性能需要注意的点的阐述。当前的这篇就做一个全篇的概述吧，针对一个开发日常面对MySQL如何保证整体的高性能，需要注意哪些坑。</p>
+        <p>Spring的标签包括默认标签和自定义标签两种，本文章主要来分析默认标签的解析过程。</p>
+<p>默认标签的解析在 parseDefaultElement函数中进行，主要分为四类标签，import、alias、bean、beans，每种对应不同的处理方式。</p>
 <a id="more"></a> 
 
 <br>
 
-<p>接下来我最主要概述以下几点</p>
-<ul>
-<li>MySQL的逻辑架构</li>
-<li>什么才是日常开销最大的地方？</li>
-<li>MySQL因此做了哪些措施？</li>
-<li>索引必须了解的知识</li>
-<li>安全性是如何保证的？</li>
-</ul>
-<p>​        MVCC事务多版本控制、索引、日志系统的设计都是很大一块的内容，也是核心，后续我会一一补充上来，这里暂时不做详细说明。</p>
-<br>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">parseDefaultElement</span><span class="params">(Element ele, BeanDefinitionParserDelegate delegate)</span> </span>&#123;</span><br><span class="line">   <span class="keyword">if</span> (delegate.nodeNameEquals(ele, IMPORT_ELEMENT)) &#123;</span><br><span class="line">      importBeanDefinitionResource(ele);</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">else</span> <span class="keyword">if</span> (delegate.nodeNameEquals(ele, ALIAS_ELEMENT)) &#123;</span><br><span class="line">      processAliasRegistration(ele);</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">else</span> <span class="keyword">if</span> (delegate.nodeNameEquals(ele, BEAN_ELEMENT)) &#123;</span><br><span class="line">      processBeanDefinition(ele, delegate);</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">else</span> <span class="keyword">if</span> (delegate.nodeNameEquals(ele, NESTED_BEANS_ELEMENT)) &#123;</span><br><span class="line">      <span class="comment">// recurse</span></span><br><span class="line">      doRegisterBeanDefinitions(ele);</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="1、Bean标签的解析及注册"><a href="#1、Bean标签的解析及注册" class="headerlink" title="1、Bean标签的解析及注册"></a><strong>1、Bean标签的解析及注册</strong></h2><p>在4种标签的解析中，对 bean标签的解析最为复杂也最为重要。首先来看看 processBeanDefinition函数</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">processBeanDefinition</span><span class="params">(Element ele, BeanDefinitionParserDelegate delegate)</span> </span>&#123;</span><br><span class="line">   BeanDefinitionHolder bdHolder = delegate.parseBeanDefinitionElement(ele);</span><br><span class="line">   <span class="keyword">if</span> (bdHolder != <span class="keyword">null</span>) &#123;</span><br><span class="line">      bdHolder = delegate.decorateBeanDefinitionIfRequired(ele, bdHolder);</span><br><span class="line">      <span class="keyword">try</span> &#123;</span><br><span class="line">         <span class="comment">// Register the final decorated instance.</span></span><br><span class="line">         BeanDefinitionReaderUtils.registerBeanDefinition(bdHolder, getReaderContext().getRegistry());</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">catch</span> (BeanDefinitionStoreException ex) &#123;</span><br><span class="line">         getReaderContext().error(<span class="string">"Failed to register bean definition with name '"</span> +</span><br><span class="line">               bdHolder.getBeanName() + <span class="string">"'"</span>, ele, ex);</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="comment">// Send registration event.</span></span><br><span class="line">      getReaderContext().fireComponentRegistered(<span class="keyword">new</span> BeanComponentDefinition(bdHolder));</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>大致的逻辑总结如下：</p>
+<p>1、首先委托BeanDefinationDelegate类的parseBeanDefinationElement方法进行元素解析，返回BeanDefinitionHolder 类型的实例 beHolder,经过这个方法后，beHolder实例已经包含我们配置文件中配置的各种属性了，例如 class、name、id、alias之类的属性。</p>
+<p>2、当返回的beHolder不为空的情况下，若存在默认标签的子节点下再有自定义属性，还需要再次对自定义标签进行解析。</p>
+<p>3、解析完成后，需要对解析后的beHolder进行注册，同样，注册操作委托给了 BeanDefinationReadUtils 的 registerBeanDefination 方法</p>
+<p>4、最后发出响应事件，通知相关的监听器，这个bean已经加载完成了。</p>
+<h3 id="1-1-解析BeanDefination"><a href="#1-1-解析BeanDefination" class="headerlink" title="1.1 解析BeanDefination"></a><strong>1.1 解析BeanDefination</strong></h3><p>首先我们从元素解析及信息提取开始，也就是 BeanDefinitionParserDelegate 类的parseBeanDefinitionElement方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> BeanDefinitionHolder <span class="title">parseBeanDefinitionElement</span><span class="params">(Element ele, @Nullable BeanDefinition containingBean)</span> </span>&#123;</span><br><span class="line">   String id = ele.getAttribute(ID_ATTRIBUTE);</span><br><span class="line">   String nameAttr = ele.getAttribute(NAME_ATTRIBUTE);</span><br><span class="line"></span><br><span class="line">   List&lt;String&gt; aliases = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">   <span class="keyword">if</span> (StringUtils.hasLength(nameAttr)) &#123;</span><br><span class="line">      String[] nameArr = StringUtils.tokenizeToStringArray(nameAttr, MULTI_VALUE_ATTRIBUTE_DELIMITERS);</span><br><span class="line">      aliases.addAll(Arrays.asList(nameArr));</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   String beanName = id;</span><br><span class="line">   <span class="keyword">if</span> (!StringUtils.hasText(beanName) &amp;&amp; !aliases.isEmpty()) &#123;</span><br><span class="line">      beanName = aliases.remove(<span class="number">0</span>);</span><br><span class="line">      <span class="keyword">if</span> (logger.isDebugEnabled()) &#123;</span><br><span class="line">         logger.debug(<span class="string">"No XML 'id' specified - using '"</span> + beanName +</span><br><span class="line">               <span class="string">"' as bean name and "</span> + aliases + <span class="string">" as aliases"</span>);</span><br><span class="line">      &#125;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="keyword">if</span> (containingBean == <span class="keyword">null</span>) &#123;</span><br><span class="line">      checkNameUniqueness(beanName, aliases, ele);</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   AbstractBeanDefinition beanDefinition = parseBeanDefinitionElement(ele, beanName, containingBean);</span><br><span class="line">   <span class="keyword">if</span> (beanDefinition != <span class="keyword">null</span>) &#123;</span><br><span class="line">      <span class="keyword">if</span> (!StringUtils.hasText(beanName)) &#123;</span><br><span class="line">         <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (containingBean != <span class="keyword">null</span>) &#123;</span><br><span class="line">               beanName = BeanDefinitionReaderUtils.generateBeanName(</span><br><span class="line">                     beanDefinition, <span class="keyword">this</span>.readerContext.getRegistry(), <span class="keyword">true</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">else</span> &#123;</span><br><span class="line">               beanName = <span class="keyword">this</span>.readerContext.generateBeanName(beanDefinition);</span><br><span class="line">               <span class="comment">// Register an alias for the plain bean class name, if still possible,</span></span><br><span class="line">               <span class="comment">// if the generator returned the class name plus a suffix.</span></span><br><span class="line">               <span class="comment">// This is expected for Spring 1.2/2.0 backwards compatibility.</span></span><br><span class="line">               String beanClassName = beanDefinition.getBeanClassName();</span><br><span class="line">               <span class="keyword">if</span> (beanClassName != <span class="keyword">null</span> &amp;&amp;</span><br><span class="line">                     beanName.startsWith(beanClassName) &amp;&amp; beanName.length() &gt; beanClassName.length() &amp;&amp;</span><br><span class="line">                     !<span class="keyword">this</span>.readerContext.getRegistry().isBeanNameInUse(beanClassName)) &#123;</span><br><span class="line">                  aliases.add(beanClassName);</span><br><span class="line">               &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (logger.isDebugEnabled()) &#123;</span><br><span class="line">               logger.debug(<span class="string">"Neither XML 'id' nor 'name' specified - "</span> +</span><br><span class="line">                     <span class="string">"using generated bean name ["</span> + beanName + <span class="string">"]"</span>);</span><br><span class="line">            &#125;</span><br><span class="line">         &#125;</span><br><span class="line">         <span class="keyword">catch</span> (Exception ex) &#123;</span><br><span class="line">            error(ex.getMessage(), ele);</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">         &#125;</span><br><span class="line">      &#125;</span><br><span class="line">      String[] aliasesArray = StringUtils.toStringArray(aliases);</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">new</span> BeanDefinitionHolder(beanDefinition, beanName, aliasesArray);</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在开始对属性展开全面解析钱，Spring在外层又做了一个当前层的功能架构，在当前层完成的主要工作包括如下内容。</p>
+<ol>
+<li>提取元素中的id以及name属性。</li>
+<li>进一步解析其他所有属性并统一封装至GenericBeanDefination类型的实例中。</li>
+<li>如果检测到bean没有beanName,那么使用默认规则为此Bean生成beanName。</li>
+<li>将获取到的信息封装到BeanDefinationHolder的实例中。</li>
+</ol>
+<p>进一步查看步骤2中堆标签其他属性的解析过程</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> AbstractBeanDefinition <span class="title">parseBeanDefinitionElement</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">      Element ele, String beanName, @Nullable BeanDefinition containingBean)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">   <span class="keyword">this</span>.parseState.push(<span class="keyword">new</span> BeanEntry(beanName));</span><br><span class="line"></span><br><span class="line">   String className = <span class="keyword">null</span>;</span><br><span class="line">   <span class="keyword">if</span> (ele.hasAttribute(CLASS_ATTRIBUTE)) &#123;</span><br><span class="line">      className = ele.getAttribute(CLASS_ATTRIBUTE).trim();</span><br><span class="line">   &#125;</span><br><span class="line">   String parent = <span class="keyword">null</span>;</span><br><span class="line">   <span class="keyword">if</span> (ele.hasAttribute(PARENT_ATTRIBUTE)) &#123;</span><br><span class="line">      parent = ele.getAttribute(PARENT_ATTRIBUTE);</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="keyword">try</span> &#123;</span><br><span class="line">       <span class="comment">// 创建用于承载属性的AbstractBeanDefinition 类型的GenericBeanDefination</span></span><br><span class="line">      AbstractBeanDefinition bd = createBeanDefinition(className, parent);</span><br><span class="line">      <span class="comment">// 硬编码解析默认bean的各种属性（奇怪的是scope为单例会记录错误，这是为啥？）</span></span><br><span class="line">      parseBeanDefinitionAttributes(ele, beanName, containingBean, bd);</span><br><span class="line">      bd.setDescription(DomUtils.getChildElementValueByTagName(ele, DESCRIPTION_ELEMENT));</span><br><span class="line">      <span class="comment">// 解析元数据</span></span><br><span class="line">      parseMetaElements(ele, bd);</span><br><span class="line">      parseLookupOverrideSubElements(ele, bd.getMethodOverrides());</span><br><span class="line">      parseReplacedMethodSubElements(ele, bd.getMethodOverrides());</span><br><span class="line">      <span class="comment">// 解析构造函数参数、property、qualifier子元素</span></span><br><span class="line">      parseConstructorArgElements(ele, bd);</span><br><span class="line">      parsePropertyElements(ele, bd);</span><br><span class="line">      parseQualifierElements(ele, bd);</span><br><span class="line"></span><br><span class="line">      bd.setResource(<span class="keyword">this</span>.readerContext.getResource());</span><br><span class="line">      bd.setSource(extractSource(ele));</span><br><span class="line"></span><br><span class="line">      <span class="keyword">return</span> bd;</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">catch</span> (ClassNotFoundException ex) &#123;</span><br><span class="line">      error(<span class="string">"Bean class ["</span> + className + <span class="string">"] not found"</span>, ele, ex);</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">catch</span> (NoClassDefFoundError err) &#123;</span><br><span class="line">      error(<span class="string">"Class that bean class ["</span> + className + <span class="string">"] depends on not found"</span>, ele, err);</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">catch</span> (Throwable ex) &#123;</span><br><span class="line">      error(<span class="string">"Unexpected failure during bean definition parsing"</span>, ele, ex);</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">finally</span> &#123;</span><br><span class="line">      <span class="keyword">this</span>.parseState.pop();</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>从上面的方法可以看出，bean标签的所有属性都被我们看到了，只有一些复杂属性需要进一步解析。</p>
+<h4 id="1、创建用于属性承载的BeanDefination"><a href="#1、创建用于属性承载的BeanDefination" class="headerlink" title="1、创建用于属性承载的BeanDefination"></a><strong>1、创建用于属性承载的BeanDefination</strong></h4><p>BeanDefination是一个接口，在Spring中存在三种实现： RootBeanDefination、ChildBeanDefination、以及GenericBeanDefination.三种实现均继承了 AbstractBeanDefination，其中 BeanDefination 是配置文件 <bean>元素标签在容器中的内部表示形式。 <bean>元素标签拥有 class、scope、lazy-init等配置属性。BeanDefination则提供了相应的beanClass、scope、lazyInit属性。</bean></bean></p>
+<p>​    在配置文件中可以定义父<bean>和子<bean>,父<bean>用RootBeanDefination表示，而子<bean>用ChildBeanDefination表示。</bean></bean></bean></bean></p>
+<p>​    Spring通过BeanDefination将配置文件中的<bean>配置信息转换为容器的内部表示，并将这些BeanDefinition注册到BeanDefinitionRegistry中。Spring容器的BeanDefinitionRegistry就像是Spring配置信息的内存数据库，主要是以map的形式保存，后续操作直接从BeanDefinitionRegistry中读取配置信息。</bean></p>
+<img src="/2022/07/17/Spring-默认标签解析/BeanDefinition.png" title="BeanDefinition">
 
 
 
-<h2 id="MySQL的逻辑架构"><a href="#MySQL的逻辑架构" class="headerlink" title="MySQL的逻辑架构"></a>MySQL的逻辑架构</h2><img src="/2020/11/28/MySQL打怪之路/b1.jpg" title="架构图">
+<p>由此可知，要解析属性首先要创建用于承载属性的实例，也就是创建 GenericBeanDefination类型的实例，而代码 createBeanDefinition(className, parent)的作用就是实现此功能。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> AbstractBeanDefinition <span class="title">createBeanDefinition</span><span class="params">(@Nullable String className, @Nullable String parentName)</span></span></span><br><span class="line"><span class="function">      <span class="keyword">throws</span> ClassNotFoundException </span>&#123;</span><br><span class="line"></span><br><span class="line">   <span class="keyword">return</span> BeanDefinitionReaderUtils.createBeanDefinition(</span><br><span class="line">         parentName, className, <span class="keyword">this</span>.readerContext.getBeanClassLoader());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p>上图是对 一个查询语句在MySQL中需要经历哪些模块</p>
-<p>在MySQL中主要分为两大模块 <strong>Server层和引擎层</strong></p>
-<h4 id="客户端"><a href="#客户端" class="headerlink" title="客户端"></a><strong>客户端</strong></h4><p><strong>Server层（在内存中操作）</strong></p>
-<ul>
-<li>连接器： 用户权限校验</li>
-<li>缓存：对操作语句涉及加载的数据存储在内存中</li>
-<li>分析器： 对sql语句的词法、语法校验</li>
-<li>优化器：sql优化，提供自己认为最佳的执行方式</li>
-<li>执行器：操作执行引擎并返回结果</li>
-</ul>
-<p><strong>引擎层（在磁盘中操作）</strong></p>
-<p>大家知道sql语句会涉及哪些模块，这些模块有哪些用即可，不需要做过深的研究。</p>
-<br>
+<p>BeanDefinitionReaderUtils.java</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> AbstractBeanDefinition <span class="title">createBeanDefinition</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">      @Nullable String parentName, @Nullable String className, @Nullable ClassLoader classLoader)</span> <span class="keyword">throws</span> ClassNotFoundException </span>&#123;</span><br><span class="line"></span><br><span class="line">   GenericBeanDefinition bd = <span class="keyword">new</span> GenericBeanDefinition();</span><br><span class="line">   bd.setParentName(parentName);</span><br><span class="line">   <span class="keyword">if</span> (className != <span class="keyword">null</span>) &#123;</span><br><span class="line">      <span class="keyword">if</span> (classLoader != <span class="keyword">null</span>) &#123;</span><br><span class="line">         bd.setBeanClass(ClassUtils.forName(className, classLoader));</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">else</span> &#123;</span><br><span class="line">         bd.setBeanClassName(className);</span><br><span class="line">      &#125;</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">return</span> bd;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<h2 id="什么才是日常开销最大的地方？"><a href="#什么才是日常开销最大的地方？" class="headerlink" title="什么才是日常开销最大的地方？"></a>什么才是日常开销最大的地方？</h2><p>​        在MySQL中单论各模块的执行，什么是开销最大的呢？<strong>是对磁盘的读写，也就是IO开销最大</strong>，首先我们要知道数据是存储在磁盘，而磁盘的数据分布在各个数据页中，页（Page）是 Innodb 存储引擎用于管理数据的最小磁盘单位，一个数据页为 16 K。假设一行数据记录为16字节，那么一个数据页最多可以存放1024条记录（不考虑数据空洞的情况）。</p>
-<p>​        我们必须要明白一点，那就是不管你是用索引(主键索引、普通索引、覆盖索引）还是全表扫描，只要你所需的数据没有在缓存中命中，你就必须去磁盘中加载数据页，把一页数据页里的数据记录加载到内存中进行遍历来找到对应的记录，MySQL的索引通过B+树的结构保证数据能在3次左右的磁盘IO读取便能定位到一条数据所在的磁盘数据页位置。</p>
-<p>​         大家对索引的B+树结构和磁盘数据页不太理解的话，可以看往期的文章 <a href="http://www.eiletxie.cn/2019/10/07/MySQL中索引模块/" target="_blank" rel="noopener">MySQL的索引模块</a>，这里不做过多说明。</p>
-<p>​         因此我们日常要注意的和MySQL所要做的都是尽可能的减少 磁盘的读写，在内存中进行操作或者业务的设计来尽量避免大量IO读写数据。</p>
-<br>
-
-<h3 id="那么MySQL是怎么设计来减少磁盘读写的呢？"><a href="#那么MySQL是怎么设计来减少磁盘读写的呢？" class="headerlink" title="那么MySQL是怎么设计来减少磁盘读写的呢？"></a><strong>那么MySQL是怎么设计来减少磁盘读写的呢？</strong></h3><h5 id="1、通过缓存命中来减少磁盘读"><a href="#1、通过缓存命中来减少磁盘读" class="headerlink" title="1、通过缓存命中来减少磁盘读"></a><strong>1、通过缓存命中来减少磁盘读</strong></h5><p>​       假设表A是在系统的很多业务模块都会被用到，即表A经常要被查询，比如系统配置、用户信息等，难道每次都去数据库查吗？肯定是加载到缓存中，如果缓存中有直接返回结果来减少IO开销的。</p>
-<br>
-
-<h5 id="2、通过change-buffer来减少磁盘写"><a href="#2、通过change-buffer来减少磁盘写" class="headerlink" title="2、通过change buffer来减少磁盘写"></a><strong>2、通过change buffer来减少磁盘写</strong></h5><p>​      既然可以通过缓存记录数据，减少去磁盘读取，那能不能有一种方式在缓存中记录客户端的更新语句，等到合适的时候再写入到磁盘中，假如这个时候要查询数据，先加载磁盘中的数据到缓存，再将更新语句逻辑merge到对应的数据记录中，然后返回结果。没错，MySQL就有这种东西，叫做change buffer。</p>
-<p>​      这里需要说明change buffer是什么？ （mysql5.5之前只支持记录插入语句，又称为insert buffer,mysql 5.5以后支持更新和删除语句的记录）。</p>
-<p>​      我们看一下MySQL官网5.7版本对于 change buffer的说明</p>
-<img src="/2020/11/28/MySQL打怪之路/b2.jpg" title="说明">
-
-<br>
-
-<p>​       change buffer是一种特殊的数据结构，用于在二级索引页不在缓冲池中时将更改缓存到二级索引页（非聚簇索引即非主键索引，这里你直接理解成普通索引和数据页就行，因为我们要更新的就是这些数据）。缓冲的更改（可能由INSERT，UPDATE或DELETE操作（DML）引起）将在以后通过其他读取操作将页面加载到缓冲池中时合并。</p>
-<br>
-
-<img src="/2020/11/28/MySQL打怪之路/b3.jpg" title="change buffer">
-
-<p>​      可能你还不能理解，我这里举一个例子，假设 一个用户行为记录分析表，它的数据是经常需要更新的，当用户做了几百次操作，如果没有change buffer，你需要读取一次索引对应磁盘数据页到内存中，更新了再写入到磁盘中，重复上百次。这里你需要明白一个机制（<strong>如果表更改了，那么使用这个表的所有缓存查询将不再有效，查询缓存中值相关条目会被清空，这是为了保证数据的一致性</strong>）</p>
-<p>​       这个时候你就明白change buffer的作用了，它不仅减少了随机的磁盘写，转变成了顺序磁盘写，某种意义上如果是重复数据的更新，也减少了磁盘读。</p>
- <br>
-
-<p>细心的读者会发现，光有change buffer是不行的，因为一旦MySQL异常重启，岂不是缓存中的数据会全部丢失?  这就得用到 redo log,如果发生异常的情况，会根据redo log做数据的更新，<strong>那如果 是刚写入change buffer，还没有写入到 redo log的时候挂掉了咋办？</strong></p>
-<p>​     DML语句是会开启事务的，只有redo log成功写入提交后，当前事务才会commit的，如果redo log没写就失败是会直接回滚事务的，又或者服务端挂掉则缓存清空，redo log没有记录到对应更新而已，这种情况需要重头再来，不会导致数据不一致的。</p>
-<br>
-
-<h2 id="索引小知识"><a href="#索引小知识" class="headerlink" title="索引小知识"></a>索引小知识</h2><p>​      大家都了解，索引就像是书的目录，是为了快速查找数据。它是由B+树的结构，正常的业务在亿级别以下的表，能够做到3次查询即可找到对应的数据页。</p>
-<p>​      但是索引也可能因为你的查询方式，或者一些限制因素从而失效，或者Mysql选错了索引等。</p>
-<p>​      关于查询方式不对导致未使用到的索引的情况有很多，范围查询，类型转换（尤其是很少注意的隐式转换），使用内置函数，复合索引查询条件顺序不对等等。这是一块很大的内容，这篇文章只讲总览，就不针对性的说，大家这方面不太了解的，我推荐可以学习B站上 尚硅谷的Mysql高级篇，那个视频对这块有比较详细的讲述。</p>
-<p>​       我这块说和大家说的是一些平时很少会注意的点。</p>
-<br>
-
-<h3 id="普通索引和唯一索引的区别"><a href="#普通索引和唯一索引的区别" class="headerlink" title="普通索引和唯一索引的区别"></a><strong>普通索引和唯一索引的区别</strong></h3><p>​        唯一索引要求 数据列组合的值是唯一的，普通索引没有这个要求，这个大家都知道。还有呢？大家有没有想过，这两种索引对DML语句有什么影响吗？</p>
-<p><strong>对SELECT语句来说：</strong></p>
-<p>如果是等值查询，在索引遍历时，找到符合要求的记录后，唯一索引是不需要往下遍历，因为只有一条主键ID，而普通索引可能存在多条，需要继续遍历，直到找到的数据记录不符合要求为止，不过这个对性能几乎没有影响。</p>
-<br>
-
-<p><strong>对UPDATE、INSERT语句来说：</strong></p>
-<p>​        这就是考察大家的地方，我们前面说过 change buffer。再回顾一下它的作用，把用户的非SELECT的DML语句记录到缓冲池，当读取对应表记录到缓存时，将顺序的把这些DML语句执行更新该记录，然后再写回数据页，大大减少了磁盘读和磁盘写。</p>
-<p>​        如果是唯一索引，能不能将INSERT语句缓存起来，作为change buffer呢？明显不能，为什么？</p>
-<p>​       因为表里面可能已经存在对应的数据，你必须去查表判断唯一性，而普通索引则没这个必要，这就是我们需要注意的区别。</p>
-<p>​        那你此时还有疑问，那为什么UPDATE语句也不能作为change buffer呢？</p>
-<p>​       一样的数据列唯一性问题，唯一索引又不一定非得是主键索引，假设我设置唯一索引列是name,update user set name = ‘李四’ where name = ‘张三’ ，你必须在更新前去数据库查询索引判断name=’李四’存不存在。</p>
- <br>
-
-<h3 id="Change-Buffer的适用场景"><a href="#Change-Buffer的适用场景" class="headerlink" title="Change Buffer的适用场景"></a><strong>Change Buffer的适用场景</strong></h3><p>​      change buffer是将更新语句存储在缓冲区中，当执行读取语句时再将对应的更新语句顺序更新，这个操作叫merge，然后刷回磁盘。这种是特别适合写多读少的场景的。</p>
-<p>​       但是如果是读多写少的场景或者是写完马上就要读的场景，这种情况其实是不适合的，将更新先记录在 change buffer，但之后由于马上要访问这个数据页，会立即触发 merge 过程。这样随机访问 IO 的次数不会减少，反而增加了 change buffer 的维护代价。所以，对于这种业务模式来说，change buffer 反而起到了副作用。</p>
-<br>
-
-<h3 id="字符串加索引注意点"><a href="#字符串加索引注意点" class="headerlink" title="字符串加索引注意点"></a><strong>字符串加索引注意点</strong></h3><p>​       如果你需要给一个邮箱或者是身份证号加索引，你怎么加好呢？索引是有开销的，如果你就按照整个身份证号来存，开销较大，在一些业务场景下，有很多东西是没必要存的。</p>
-<p>​      假设你只需要记录某个县的居民身份证号，那前面的6位是地址码，就不用记录。又例如记录某个公司的用户邮箱 后缀.com是不是可以去除，其实在某些情况下我们如何取字符串作为索引，一个是通过先去除无用的字符，二是通常查询来判断</p>
-<p>​     使用前缀索引，定义好长度，就可以做到既节省空间，又不用额外增加太多的查询成本。</p>
-<p>我们可以截取对应长度的字段来判断区分度</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> </span><br><span class="line">  <span class="keyword">count</span>(<span class="keyword">distinct</span> <span class="keyword">left</span>(email,<span class="number">4</span>)）<span class="keyword">as</span> L4,</span><br><span class="line">  <span class="keyword">count</span>(<span class="keyword">distinct</span> <span class="keyword">left</span>(email,<span class="number">5</span>)）<span class="keyword">as</span> L5,</span><br><span class="line">  <span class="keyword">count</span>(<span class="keyword">distinct</span> <span class="keyword">left</span>(email,<span class="number">6</span>)）<span class="keyword">as</span> L6,</span><br><span class="line">  <span class="keyword">count</span>(<span class="keyword">distinct</span> <span class="keyword">left</span>(email,<span class="number">7</span>)）<span class="keyword">as</span> L7,</span><br><span class="line"><span class="keyword">from</span> <span class="keyword">User</span>;</span><br></pre></td></tr></table></figure>
-
-<p>当然，使用前缀索引很可能会损失区分度，所以你需要预先设定一个可以接受的损失比例，比如 5%。然后，在返回的 L4~L7 中，找出不小于 L * 95% 的值，假设这里 L6、L7 都满足，你就可以选择前缀长度为 6。</p>
-<p>​      当然你也可以考虑使用其他的方法来保证区分度。</p>
-<br>
-
-<p><strong>hash对应字段的值作为索引</strong></p>
-<p>​      这种在很多业务上都经常见到，我举一个我公司的例子，假设我要确定相关的记录，没法通过主键id去找，我在业务流的上面中只能获取十几个字段的值，怎么快速找到下面业务流中符合要求的数据呢？ 我们在业务的设计上，在插入记录时新增一个 hash字段，将这十几个字段的值组合成一个字符串然后hash出一个值存储。这样我们在查找时在应用层直接算出hash值就能够根据hash值建的索引进行快速查找，避免了全表扫描。</p>
-<br>
-
-<p><strong>倒序存储</strong></p>
-<p>​       这种业务上遇到的不多，例如身份证号前面的区分度很低，我们可以倒序的然后查询区分度，选择保留的长度，裁剪字符串，然后再存起来。</p>
-<br>
-
-<h3 id="安全性问题"><a href="#安全性问题" class="headerlink" title="安全性问题"></a><strong>安全性问题</strong></h3><p>​     安全性问题涉及 主备同步、crash-safe，其实需要了解的还是日志的设计，redo log（重做日志），binlog(归档日志）</p>
-<p>​      redo log在许多应用场景中一般只存储DML语句执行后的结果值，binlog是详细记录了sql语句，通过这两黄金搭档来保证crash-safe和主备同步。后续会单独写一篇博客，一是涉及内容过多，二是我现在也不能说对其完全了解，尤其是其结构设计这块。</p>
+<h4 id="2、解析各种属性"><a href="#2、解析各种属性" class="headerlink" title="2、解析各种属性"></a><strong>2、解析各种属性</strong></h4><p> 待补充</p>
 
       
 
@@ -302,24 +236,13 @@
 		<ul class="article-tag-list">
 			 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">MySQL</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">Spring</a>
         		</li>
       		
 		</ul>
 	</div>
 
       
-	<div class="article-category tagcloud">
-		<i class="icon-book icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="/categories/数据库优化//" class="article-tag-list-link color1">数据库优化</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
 
       
 
@@ -369,7 +292,7 @@
     <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
     <p>扫一扫，分享到微信</p>
     <div class="wx-qrcode">
-      <img src="//pan.baidu.com/share/qrcode?url=http://120.79.219.152/2020/11/28/MySQL打怪之路/" alt="微信分享二维码">
+      <img src="//pan.baidu.com/share/qrcode?url=http://120.79.219.152/2022/07/17/Spring-默认标签解析/" alt="微信分享二维码">
     </div>
 </div>
 
@@ -383,18 +306,9 @@
   
 <nav id="article-nav">
   
-    <a href="/2021/01/17/企业慢SQL优化总结/" id="article-nav-newer" class="article-nav-link-wrap">
-      <i class="icon-circle-left"></i>
-      <div class="article-nav-title">
-        
-          企业慢SQL优化总结
-        
-      </div>
-    </a>
   
-  
-    <a href="/2020/10/12/代理模式/" id="article-nav-older" class="article-nav-link-wrap">
-      <div class="article-nav-title">代理模式</div>
+    <a href="/2022/06/26/Spring源码系列-Spring容器的基本实现/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">Spring源码系列-Spring容器的基本实现</div>
       <i class="icon-circle-right"></i>
     </a>
   
@@ -421,7 +335,7 @@
                 </span>
                 <span class="tooltip-content">
                     <div class="toc-article">
-                    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#MySQL的逻辑架构"><span class="toc-number">1.</span> <span class="toc-text">MySQL的逻辑架构</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#客户端"><span class="toc-number">1.0.1.</span> <span class="toc-text">客户端</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#什么才是日常开销最大的地方？"><span class="toc-number">2.</span> <span class="toc-text">什么才是日常开销最大的地方？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#那么MySQL是怎么设计来减少磁盘读写的呢？"><span class="toc-number">2.1.</span> <span class="toc-text">那么MySQL是怎么设计来减少磁盘读写的呢？</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#1、通过缓存命中来减少磁盘读"><span class="toc-number">2.1.0.1.</span> <span class="toc-text">1、通过缓存命中来减少磁盘读</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2、通过change-buffer来减少磁盘写"><span class="toc-number">2.1.0.2.</span> <span class="toc-text">2、通过change buffer来减少磁盘写</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#索引小知识"><span class="toc-number">3.</span> <span class="toc-text">索引小知识</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#普通索引和唯一索引的区别"><span class="toc-number">3.1.</span> <span class="toc-text">普通索引和唯一索引的区别</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Change-Buffer的适用场景"><span class="toc-number">3.2.</span> <span class="toc-text">Change Buffer的适用场景</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#字符串加索引注意点"><span class="toc-number">3.3.</span> <span class="toc-text">字符串加索引注意点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#安全性问题"><span class="toc-number">3.4.</span> <span class="toc-text">安全性问题</span></a></li></ol></li></ol>
+                    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1、Bean标签的解析及注册"><span class="toc-number">1.</span> <span class="toc-text">1、Bean标签的解析及注册</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-解析BeanDefination"><span class="toc-number">1.1.</span> <span class="toc-text">1.1 解析BeanDefination</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1、创建用于属性承载的BeanDefination"><span class="toc-number">1.1.1.</span> <span class="toc-text">1、创建用于属性承载的BeanDefination</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2、解析各种属性"><span class="toc-number">1.1.2.</span> <span class="toc-text">2、解析各种属性</span></a></li></ol></li></ol></li></ol>
                     </div>
                 </span>
             </div>

@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.1">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-minimal.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous" defer></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"eiletxie.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"a11y-dark","dark":"a11y-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="消息中间件-ActiveMQActiveMQ 安装和tomcat差不多，都需要Java环境">
+<meta property="og:type" content="article">
+<meta property="og:title" content="消息中间件-ActiveMQ">
+<meta property="og:url" content="https://eiletxie.github.io/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/index.html">
+<meta property="og:site_name" content="EiletXie Blog">
+<meta property="og:description" content="消息中间件-ActiveMQActiveMQ 安装和tomcat差不多，都需要Java环境">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://eiletxie.github.io/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/install.jpg">
+<meta property="og:image" content="https://eiletxie.github.io/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/start.jpg">
+<meta property="og:image" content="https://eiletxie.github.io/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/netstat.jpg">
+<meta property="og:image" content="https://eiletxie.github.io/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/startwithlog.jpg">
+<meta property="og:image" content="https://eiletxie.github.io/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/shopmodule.jpg">
+<meta property="og:image" content="https://eiletxie.github.io/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/jmsStep.jpg">
+<meta property="og:image" content="https://eiletxie.github.io/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/transports.jpg">
+<meta property="og:image" content="https://eiletxie.github.io/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/xml-port.jpg">
+<meta property="og:image" content="https://eiletxie.github.io/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/port-more.jpg">
+<meta property="og:image" content="https://eiletxie.github.io/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/configure-uri.jpg">
+<meta property="og:image" content="https://eiletxie.github.io/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/persistence-kahadb.jpg">
+<meta property="og:image" content="https://eiletxie.github.io/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/kahadb-component.jpg">
+<meta property="og:image" content="https://eiletxie.github.io/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/activemq_acks.jpg">
+<meta property="og:image" content="https://eiletxie.github.io/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/activemq_msgs.jpg">
+<meta property="og:image" content="https://eiletxie.github.io/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/persistence_jdbc.jpg">
+<meta property="og:image" content="https://eiletxie.github.io/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/persistence_journal.jpg">
+<meta property="og:image" content="https://eiletxie.github.io/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/zookeeper.jpg">
+<meta property="og:image" content="https://eiletxie.github.io/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/zk_port.jpg">
+<meta property="og:image" content="https://eiletxie.github.io/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/zk_jetty.jpg">
+<meta property="og:image" content="https://eiletxie.github.io/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/zk_hostname.jpg">
+<meta property="og:image" content="https://eiletxie.github.io/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/zk_master.jpg">
+<meta property="og:image" content="https://eiletxie.github.io/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/async_setting.jpg">
+<meta property="og:image" content="https://eiletxie.github.io/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/delay_setting.jpg">
+<meta property="og:image" content="https://eiletxie.github.io/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/delay_example.jpg">
+<meta property="og:image" content="https://eiletxie.github.io/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/delay_property.jpg">
+<meta property="og:image" content="https://eiletxie.github.io/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/delay_setting2.jpg">
+<meta property="og:image" content="https://eiletxie.github.io/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/posion_ack.jpg">
+<meta property="og:image" content="https://eiletxie.github.io/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/posion_property.jpg">
+<meta property="og:image" content="https://eiletxie.github.io/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/activemq_DLQ.jpg">
+<meta property="og:image" content="https://eiletxie.github.io/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/mysql_DLQ.jpg">
+<meta property="og:image" content="https://eiletxie.github.io/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/DLQ_example.jpg">
+<meta property="og:image" content="https://eiletxie.github.io/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/module_DLQ.jpg">
+<meta property="article:published_time" content="2019-08-25T06:20:35.000Z">
+<meta property="article:modified_time" content="2019-12-08T06:33:44.878Z">
+<meta property="article:author" content="EiletXie">
+<meta property="article:tag" content="ActiveMQ">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://eiletxie.github.io/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/install.jpg">
+
+
+<link rel="canonical" href="https://eiletxie.github.io/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://eiletxie.github.io/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/","path":"2019/08/25/消息中间件-ActiveMQ/","title":"消息中间件-ActiveMQ"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>消息中间件-ActiveMQ | EiletXie Blog</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.5.0/search.js" integrity="sha256-xFC6PJ82SL9b3WkGjFavNiA9gm5z6UBxWPiu4CYjptg=" crossorigin="anonymous" defer></script>
+<script src="/js/third-party/search/local-search.js" defer></script>
+
+
+
+
+
+  <script src="/js/third-party/pace.js" defer></script>
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">EiletXie Blog</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">不忘初心 Keep Moving</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ"><span class="nav-number">1.</span> <span class="nav-text">消息中间件-ActiveMQ</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#ActiveMQ-%E5%AE%89%E8%A3%85"><span class="nav-number">1.1.</span> <span class="nav-text">ActiveMQ 安装</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9F%A5%E7%9C%8B%E7%AB%AF%E5%8F%A3"><span class="nav-number">1.1.1.</span> <span class="nav-text">查看端口</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%B8%A6%E6%97%A5%E5%BF%97%E5%90%AF%E5%8A%A8"><span class="nav-number">1.1.2.</span> <span class="nav-text">带日志启动</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AE%BF%E9%97%AE%EF%BC%9A"><span class="nav-number">1.1.3.</span> <span class="nav-text">访问：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E4%B8%AA%E7%94%B5%E5%95%86%E7%B3%BB%E7%BB%9F%E7%9A%84%E6%A8%A1%E5%9D%97%E8%B0%83%E7%94%A8%E5%9B%BE"><span class="nav-number">1.1.4.</span> <span class="nav-text">一个电商系统的模块调用图</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#JMS%E5%BC%80%E5%8F%91%E6%AD%A5%E9%AA%A4"><span class="nav-number">1.2.</span> <span class="nav-text">JMS开发步骤</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%AA%E4%BA%BA%E6%80%BB%E7%BB%93JMS%E5%9F%BA%E7%A1%80%E5%BC%80%E5%8F%91%E6%AD%A5%E9%AA%A4"><span class="nav-number">1.2.1.</span> <span class="nav-text">个人总结JMS基础开发步骤</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%A4%E7%A7%8DDestination%E6%A8%A1%E5%BC%8F"><span class="nav-number">1.3.</span> <span class="nav-text">两种Destination模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#JMS-Message%E7%9A%84%E7%BB%84%E6%88%90%EF%BC%9A"><span class="nav-number">1.4.</span> <span class="nav-text">JMS Message的组成：</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B6%88%E6%81%AF%E5%A4%B4"><span class="nav-number">1.4.1.</span> <span class="nav-text">消息头</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B6%88%E6%81%AF%E4%BD%93"><span class="nav-number">1.4.2.</span> <span class="nav-text">消息体</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B6%88%E6%81%AF%E5%B1%9E%E6%80%A7"><span class="nav-number">1.4.3.</span> <span class="nav-text">消息属性</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#JMS%E7%9A%84%E5%8F%AF%E9%9D%A0%E6%80%A7%EF%BC%9A"><span class="nav-number">1.5.</span> <span class="nav-text">JMS的可靠性：</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8C%81%E4%B9%85%EF%BC%88Persistent"><span class="nav-number">1.5.1.</span> <span class="nav-text">持久（Persistent):</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BA%8B%E5%8A%A1%EF%BC%9A"><span class="nav-number">1.5.2.</span> <span class="nav-text">事务：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AD%BE%E6%94%B6%EF%BC%9A"><span class="nav-number">1.5.3.</span> <span class="nav-text">签收：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ActiveMQ%E7%9A%84Broker"><span class="nav-number">1.6.</span> <span class="nav-text">ActiveMQ的Broker</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ActiveMQ%E7%9A%84%E4%BC%A0%E8%BE%93%E5%8D%8F%E8%AE%AE"><span class="nav-number">1.7.</span> <span class="nav-text">ActiveMQ的传输协议</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#ActiveMQ%E4%B8%8ENIO-%E7%BD%91%E7%BB%9C%E9%80%9A%E4%BF%A1%E6%A8%A1%E5%9E%8B%EF%BC%9A"><span class="nav-number">1.7.1.</span> <span class="nav-text">ActiveMQ与NIO 网络通信模型：</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%80%82%E7%94%A8%E5%9C%BA%E6%99%AF%EF%BC%9A"><span class="nav-number">1.7.1.1.</span> <span class="nav-text">适用场景：</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E8%AE%A9%E4%B8%80%E4%B8%AA%E7%AB%AF%E5%8F%A3%E5%8F%AF%E4%BB%A5%E6%94%AF%E6%8C%81-%E7%9B%B8%E5%85%B3%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B-%E4%BB%A5%E5%8F%8A%E5%A4%9A%E5%8D%8F%E8%AE%AE%E5%91%A2%EF%BC%9F"><span class="nav-number">1.7.2.</span> <span class="nav-text">如何让一个端口可以支持 相关网络模型 以及多协议呢？</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BE%8B%E5%A6%82%EF%BC%9A-%E8%AE%A9-5671-%E7%AB%AF%E5%8F%A3%E5%90%8C%E6%97%B6%E6%94%AF%E6%8C%81NIO%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B%E5%92%8C%E5%A4%9A%E5%8D%8F%E8%AE%AE"><span class="nav-number">1.7.2.1.</span> <span class="nav-text">例如： 让 5671 端口同时支持NIO网络模型和多协议</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ActiveMQ-%E7%9A%84%E6%8C%81%E4%B9%85%E5%8C%96%E6%9C%BA%E5%88%B6%EF%BC%9A"><span class="nav-number">1.8.</span> <span class="nav-text">ActiveMQ 的持久化机制：</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#AMQ-Message-Store"><span class="nav-number">1.8.1.</span> <span class="nav-text">AMQ Message Store:</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#KahaDB%E6%B6%88%E6%81%AF%E5%AD%98%E5%82%A8%EF%BC%9A"><span class="nav-number">1.8.2.</span> <span class="nav-text">KahaDB消息存储：</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1%E3%80%81-db-log"><span class="nav-number">1.8.2.1.</span> <span class="nav-text">1、 db-.log</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2%E3%80%81-db-data"><span class="nav-number">1.8.2.2.</span> <span class="nav-text">2、 db.data</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3%E3%80%81db-free"><span class="nav-number">1.8.2.3.</span> <span class="nav-text">3、db.free</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4%E3%80%81db-redo"><span class="nav-number">1.8.2.4.</span> <span class="nav-text">4、db.redo</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5%E3%80%81lock%E6%96%87%E4%BB%B6%E9%94%81"><span class="nav-number">1.8.2.5.</span> <span class="nav-text">5、lock文件锁</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#JDBC%E6%B6%88%E6%81%AF%E5%AD%98%E5%82%A8%EF%BC%9A"><span class="nav-number">1.8.3.</span> <span class="nav-text">JDBC消息存储：</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#jdbc%E9%85%8D%E7%BD%AE%EF%BC%9A"><span class="nav-number">1.8.3.1.</span> <span class="nav-text">jdbc配置：</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ActiveMQ-Journel"><span class="nav-number">1.8.4.</span> <span class="nav-text">ActiveMQ Journel</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E9%85%8D%E7%BD%AE-Journal"><span class="nav-number">1.8.4.1.</span> <span class="nav-text">如何配置 Journal</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ActiveMQ%E5%A4%9A%E8%8A%82%E7%82%B9%E9%9B%86%E7%BE%A4%EF%BC%9A"><span class="nav-number">1.9.</span> <span class="nav-text">ActiveMQ多节点集群：</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E4%BF%9D%E8%AF%81MQ%E9%AB%98%E5%8F%AF%E7%94%A8%EF%BC%9F"><span class="nav-number">1.9.1.</span> <span class="nav-text">如何保证MQ高可用？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#zookeeper%E4%B8%8Eactivemq%E5%8E%9F%E7%90%86"><span class="nav-number">1.9.2.</span> <span class="nav-text">zookeeper与activemq原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE%E6%AD%A5%E9%AA%A4%EF%BC%9A"><span class="nav-number">1.9.3.</span> <span class="nav-text">配置步骤：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ActiveMQ-%E9%AB%98%E7%BA%A7%E7%89%B9%E6%80%A7%EF%BC%9A"><span class="nav-number">1.10.</span> <span class="nav-text">ActiveMQ 高级特性：</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1%E3%80%81%E5%BC%95%E5%85%A5%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E4%B9%8B%E5%90%8E%E8%AF%A5%E5%A6%82%E4%BD%95%E4%BF%9D%E8%AF%81%E5%85%B6%E9%AB%98%E5%8F%AF%E7%94%A8%E6%80%A7"><span class="nav-number">1.10.1.</span> <span class="nav-text">1、引入消息队列之后该如何保证其高可用性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2%E3%80%81%E5%BC%82%E6%AD%A5%E6%8A%95%E9%80%92Async-Sends"><span class="nav-number">1.10.2.</span> <span class="nav-text">2、异步投递Async Sends</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3%E3%80%81-%E9%82%A3%E5%A6%82%E4%BD%95%E7%A1%AE%E5%AE%9A%E5%BC%82%E6%AD%A5%E5%8F%91%E9%80%81%E6%88%90%E5%8A%9F%E5%91%A2%EF%BC%9F"><span class="nav-number">1.10.3.</span> <span class="nav-text">3、 那如何确定异步发送成功呢？</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%BC%82%E6%AD%A5%E5%8F%91%E9%80%81%E4%B8%A2%E5%A4%B1%E6%B6%88%E6%81%AF%E7%9A%84%E5%9C%BA%E6%99%AF%E6%98%AF%EF%BC%9A"><span class="nav-number">1.10.3.1.</span> <span class="nav-text">异步发送丢失消息的场景是：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%90%8C%E6%AD%A5%E5%8F%91%E9%80%81%E5%92%8C%E5%BC%82%E6%AD%A5%E5%8F%91%E9%80%81%E7%9A%84%E5%8C%BA%E5%88%AB%EF%BC%9A"><span class="nav-number">1.10.3.2.</span> <span class="nav-text">同步发送和异步发送的区别：</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3%E3%80%81-%E5%BB%B6%E6%97%B6%E6%8A%95%E9%80%92%E5%92%8C%E5%AE%9A%E6%97%B6%E6%8A%95%E9%80%92"><span class="nav-number">1.11.</span> <span class="nav-text">3、 延时投递和定时投递</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9B%9B%E5%A4%A7%E5%B1%9E%E6%80%A7"><span class="nav-number">1.11.1.</span> <span class="nav-text">四大属性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%98%E7%BD%91%E8%AE%BE%E7%BD%AE%E7%9A%84%E4%BB%A3%E7%A0%81"><span class="nav-number">1.11.2.</span> <span class="nav-text">官网设置的代码</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ActiveMQ%E7%9A%84%E6%B6%88%E6%81%AF%E9%87%8D%E8%AF%95%E6%9C%BA%E5%88%B6%EF%BC%9A"><span class="nav-number">1.12.</span> <span class="nav-text">ActiveMQ的消息重试机制：</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%93%AA%E4%BA%9B%E6%83%85%E5%86%B5%E4%BC%9A%E5%AF%BC%E8%87%B4%E6%B6%88%E6%81%AF%E9%87%8D%E5%8F%91%EF%BC%9F"><span class="nav-number">1.12.1.</span> <span class="nav-text">哪些情况会导致消息重发？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B6%88%E6%81%AF%E6%97%B6%E9%97%B4%E9%87%8D%E5%8F%91%E9%97%B4%E9%9A%94%E4%B8%8E%E9%87%8D%E5%8F%91%E6%AC%A1%E6%95%B0%EF%BC%9F"><span class="nav-number">1.12.2.</span> <span class="nav-text">消息时间重发间隔与重发次数？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%89%E6%AF%92%E6%B6%88%E6%81%AF-Posion-ACK"><span class="nav-number">1.12.3.</span> <span class="nav-text">有毒消息 Posion ACK</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%AD%BB%E4%BF%A1%E9%98%9F%E5%88%97%EF%BC%9A"><span class="nav-number">1.13.</span> <span class="nav-text">死信队列：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E4%BF%9D%E8%AF%81%E6%B6%88%E6%81%AF%E4%B8%8D%E8%A2%AB%E9%87%8D%E5%A4%8D%E6%B6%88%E8%B4%B9%E5%91%A2%EF%BC%9F%E8%B0%88%E8%B0%88%E5%B9%82%E7%AD%89%E6%80%A7%E9%97%AE%E9%A2%98%E3%80%82"><span class="nav-number">1.14.</span> <span class="nav-text">如何保证消息不被重复消费呢？谈谈幂等性问题。</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="EiletXie"
+      src="/img/header.jpg">
+  <p class="site-author-name" itemprop="name">EiletXie</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">47</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">分类</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">32</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+  <div class="cc-license animated" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" rel="noopener" target="_blank"><img src="https://cdnjs.cloudflare.com/ajax/libs/creativecommons-vocabulary/2020.11.3/assets/license_badges/small/by_nc_sa.svg" alt="Creative Commons"></a>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://eiletxie.github.io/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/img/header.jpg">
+      <meta itemprop="name" content="EiletXie">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="EiletXie Blog">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="消息中间件-ActiveMQ | EiletXie Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          消息中间件-ActiveMQ
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2019-08-25 14:20:35" itemprop="dateCreated datePublished" datetime="2019-08-25T14:20:35+08:00">2019-08-25</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2019-12-08 14:33:44" itemprop="dateModified" datetime="2019-12-08T14:33:44+08:00">2019-12-08</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/JAVA/" itemprop="url" rel="index"><span itemprop="name">JAVA</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>9.8k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>9 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="消息中间件-ActiveMQ"><a href="#消息中间件-ActiveMQ" class="headerlink" title="消息中间件-ActiveMQ"></a>消息中间件-ActiveMQ</h1><h2 id="ActiveMQ-安装"><a href="#ActiveMQ-安装" class="headerlink" title="ActiveMQ 安装"></a>ActiveMQ 安装</h2><p>和tomcat差不多，都需要Java环境</p>
+<img src="/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/install.jpg" class="" title="mq安装">
+
+<span id="more"></span>
+
+<p>这里在公司的虚拟机上</p>
+<img src="/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/start.jpg" class="">
+
+<p><strong>grep -v grep</strong></p>
+<p>反转查找，即 查找不包含grep的进程</p>
+<h4 id="查看端口"><a href="#查看端口" class="headerlink" title="查看端口"></a><strong>查看端口</strong></h4><ul>
+<li><strong>netstat -anp | grep 61616</strong></li>
+<li><strong>lsof -i:61616</strong></li>
+</ul>
+<img src="/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/netstat.jpg" class="">
+
+
+
+<h4 id="带日志启动"><a href="#带日志启动" class="headerlink" title="带日志启动"></a><strong>带日志启动</strong></h4><img src="/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/startwithlog.jpg" class="">
+
+
+
+<h4 id="访问："><a href="#访问：" class="headerlink" title="访问："></a>访问：</h4><p>后台端口 61616</p>
+<p>前端访问端口 8161</p>
+<h3 id="一个电商系统的模块调用图"><a href="#一个电商系统的模块调用图" class="headerlink" title="一个电商系统的模块调用图"></a><strong>一个电商系统的模块调用图</strong></h3><img src="/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/shopmodule.jpg" class="">
+
+<h2 id="JMS开发步骤"><a href="#JMS开发步骤" class="headerlink" title="JMS开发步骤"></a>JMS开发步骤</h2><img src="/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/jmsStep.jpg" class="">
+
+<h3 id="个人总结JMS基础开发步骤"><a href="#个人总结JMS基础开发步骤" class="headerlink" title="个人总结JMS基础开发步骤"></a>个人总结JMS基础开发步骤</h3><p>1、 创建一个 ConnectFactory ,带 url</p>
+<p>2、 通过factory创建 Connection,并启动 connection</p>
+<p>3、 创建Session</p>
+<p>4、 通过session创建 Destination对象，Queue、Topic</p>
+<p>5、 创建消费者 Consumer或者注册一个 JMS message listenter 或者 生产者 Producer,并设置 Destination</p>
+<p>6、 发送或者接收 JMS message</p>
+<p>7、 关闭JMS资源</p>
+<p>当一个服务提供者提供6条信息，2条消费者监听该服务<strong>队列</strong>，则一人一半，还是按照顺序分配的</p>
+<h2 id="两种Destination模式"><a href="#两种Destination模式" class="headerlink" title="两种Destination模式"></a>两种Destination模式</h2><p>队列： 1 ： 1，1对1，当一个生产者队列对应了多个消费者时，消息采用轮播的方式，但是一条消息只能给一个消费者</p>
+<p>主题： 类似微信公众号 1 ： N, 当订阅者的数量N为0时，主题生产者发送的消息会当作废消息处理。</p>
+<h2 id="JMS-Message的组成："><a href="#JMS-Message的组成：" class="headerlink" title="JMS Message的组成："></a>JMS Message的组成：</h2><h3 id="消息头"><a href="#消息头" class="headerlink" title="消息头"></a>消息头</h3><p><strong>核心的五个属性</strong></p>
+<ul>
+<li>JMSdesination ：消息发送的目的地，主要是指Queue与Topic</li>
+<li>JMSDeliveryMode：持久与非持久模式</li>
+</ul>
+<p>​               持久模式下，一条消息发送中如果出现故障会再次发送，非持久模式下最多发送一次，出现故障消息会永久丢失</p>
+<ul>
+<li>JMSExpiration： 消息过期时间，默认永不过期</li>
+<li>JMSPriority： 消息优先级，要求加急消息要先于普通消息，0-4是普通消息，5-9是加急消息，默认是4级，同类型的消息如 9 不一定比7快，但一定比4快。</li>
+<li>JMSMessageID ： 唯一识别每个消息的表示，由MQ产生</li>
+</ul>
+<h3 id="消息体"><a href="#消息体" class="headerlink" title="消息体"></a>消息体</h3><p><strong>封装具体消息的数据</strong></p>
+<p><strong>发送和接受的消息体类型必须是一致对应的</strong></p>
+<p><strong>主要是 TextMessage,MapMessage</strong></p>
+<ul>
+<li>TextMessage: 普通的字符串消息，包含一个string</li>
+<li>MapMessage: 一个map类型的消息，key为stirng类型，而value 为java的基本类型</li>
+<li>BytesMessage: 二进制数组消息，包含一个byte[]</li>
+<li>StreamMessage: java数据流消息，用标准流操作来顺序的填充或读取</li>
+<li>ObjectMessage: 对象消息，包含一个可序列化的java对象</li>
+</ul>
+<h3 id="消息属性"><a href="#消息属性" class="headerlink" title="消息属性"></a>消息属性</h3><p>如果需要除消息头字段以外的值，那么可以使用消息属性</p>
+<p>识别&#x2F;去重&#x2F;重点标注等操作很有用</p>
+<p>setProperty 类型 如 setStringProperty</p>
+<h2 id="JMS的可靠性："><a href="#JMS的可靠性：" class="headerlink" title="JMS的可靠性："></a>JMS的可靠性：</h2><h3 id="持久（Persistent"><a href="#持久（Persistent" class="headerlink" title="持久（Persistent):"></a>持久（Persistent):</h3><p><strong>默认为持久化</strong></p>
+<ul>
+<li>非持久化：messageProducer.setDeliveryMode(DeliVeryMode.NON_PERSISTENT         特点： 当服务器挂掉的时候，消息丢失。</li>
+<li>持久化：服务器挂掉的时候，未消费的消息仍然存在，可以继续消费。</li>
+</ul>
+<p>其中主体topic持久化要想接到消息的前提是，必须在消息发送之前订阅过该主题，就跟微信公众号一样。订阅后不管消费者关闭后再次启动，关机期间服务端主题发送的消息都会再启动后接收到</p>
+<h3 id="事务："><a href="#事务：" class="headerlink" title="事务："></a>事务：</h3><p> 一旦开启事务，消息发送和接受，session需要commit才生效</p>
+<h3 id="签收："><a href="#签收：" class="headerlink" title="签收："></a>签收：</h3><ul>
+<li>非事务： 默认自动签收、可设置手动签收 Session.CLIENT_ACKONWLEDGE，重复消息</li>
+<li>事务： 当设置为事务时，只要session.commit()不管签收的模式是什么，可当做自动签收。当未session.commit()时，手动签收模式是否确认签收，都无效，总会收到重复消息，因为事务优先级最高。</li>
+</ul>
+<h2 id="ActiveMQ的Broker"><a href="#ActiveMQ的Broker" class="headerlink" title="ActiveMQ的Broker"></a>ActiveMQ的Broker</h2><p>一个具体的服务器MQ实例，可以被JAVA创建一个简易的MQ内核开启关闭，同时支持外部访问，不过一般还是用linux上的MQ</p>
+<h2 id="ActiveMQ的传输协议"><a href="#ActiveMQ的传输协议" class="headerlink" title="ActiveMQ的传输协议"></a>ActiveMQ的传输协议</h2><p><strong>官网介绍：</strong></p>
+<p><a target="_blank" rel="noopener" href="http://activemq.apache.org/configuring-transports.html">http://activemq.apache.org/configuring-transports.html</a></p>
+<p>ActiveMQ的核心协议在下面</p>
+<p>如果不特别指定ActiveMQ的网络监听端口，那么这些端口都将使用BIO网络IO模型（openWire,STOMP,AMQP..)</p>
+<p>所以要提升单节点的传输性能，我们需要底层配置协议</p>
+<img src="/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/transports.jpg" class="">
+
+<p>而 ActiveMQ自身的配置文件 activemq.xml中 端口配置情况</p>
+<img src="/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/xml-port.jpg" class="">
+
+<p><strong>看到没有？ 不同的协议设置了不同的网络监听端口，默认是一个端口一个协议</strong></p>
+<p>URL描述信息的头部都是采用协议名称，例如：</p>
+<p>描述 amqp协议的监听端口时，采用的URL描述格式为 “amap:&#x2F;&#x2F;….”;</p>
+<p>但唯独描述 openwire协议描述时，URL头却采用 “tcp:&#x2F;&#x2F;….”</p>
+<p>为什么？</p>
+<p><strong>因为 ActiveMQ的默认消息协议就是 openwire 协议。</strong></p>
+<h3 id="ActiveMQ与NIO-网络通信模型："><a href="#ActiveMQ与NIO-网络通信模型：" class="headerlink" title="ActiveMQ与NIO 网络通信模型："></a>ActiveMQ与NIO 网络通信模型：</h3><p>NIO协议与TCP协议类似，但NIO更加侧重底层的访问操作。它允许开发人员对同一资源的更多Client调用和服务端有更多负载。</p>
+<p>从上述的描述中我们可以明白 NIO相比 TCP 在底层资源这块处理更佳</p>
+<h4 id="适用场景："><a href="#适用场景：" class="headerlink" title="适用场景："></a>适用场景：</h4><ul>
+<li>​      可能存在 大量的Client连接到Broker上，一般情况下，大量的Client去连接Broker是会被操作系统限制线程数的，然而 NIO 的实现相比 TCP 可以做到 更少的线程去运行。</li>
+<li>​      可能对于Broker有一个很迟钝的网络传输，NIO比TCP提供更好的性能。</li>
+</ul>
+<h3 id="如何让一个端口可以支持-相关网络模型-以及多协议呢？"><a href="#如何让一个端口可以支持-相关网络模型-以及多协议呢？" class="headerlink" title="如何让一个端口可以支持 相关网络模型 以及多协议呢？"></a>如何让一个端口可以支持 相关网络模型 以及多协议呢？</h3><img src="/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/port-more.jpg" class="">
+
+<p>从5.13版本开始，auto 关键字支持4种协议之间的互通，这里auto类似java中这个4个协议统一实现的接口一样。</p>
+<p>官网AUTO介绍：<a target="_blank" rel="noopener" href="http://activemq.apache.org/auto">http://activemq.apache.org/auto</a></p>
+<h4 id="例如：-让-5671-端口同时支持NIO网络模型和多协议"><a href="#例如：-让-5671-端口同时支持NIO网络模型和多协议" class="headerlink" title="例如： 让 5671 端口同时支持NIO网络模型和多协议"></a>例如： 让 5671 端口同时支持NIO网络模型和多协议</h4><p>localhost设置为 0.0.0.0</p>
+<p>在activemq.xml中配置</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">transportConnector</span> <span class="attr">name</span>=<span class="string">&quot;auto+nio&quot;</span> <span class="attr">uri</span>=<span class="string">&quot;auto+nio://localhost:5671&quot;</span>/&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p><em>重启动服务器后</em></p>
+<ul>
+<li><em>我们想使用自带的4种协议的时候，不用写具体详细名，可以直接使用  tcp:&#x2F;&#x2F;服务器地址:5671，它会自动根据代码去适配这四种协议中的一种。</em></li>
+<li><em>如果我们想使用 NIO进行单节点数据传输协议，我们就 nio:&#x2F;&#x2F;服务器地址:5671</em></li>
+</ul>
+<p><em>当然生产环境可不能这么简单的配置，好歹也要设置最大连接数量，最大消息的大小设置,NIO的线程池的最大工作线程数量。</em></p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">transportConnector</span> <span class="attr">name</span>=<span class="string">&quot;auto+nio&quot;</span> <span class="attr">uri</span>=<span class="string">&quot;auto+nio://0.0.0.0:61608?maximumConnections=1000&amp;wireFormat.maxFrameSize=104857600&amp;org.apache.activemq.transport.nio.SelectorManager.corePoolSize=20&amp;org.apache.activemq.transport.nio.SelectorManamaximumConnections=1000&amp;wireFormat.maxFrameSize=104857600&amp;org.apache.activemq.transport.nio.SelectorManager.corePoolSize=20&amp;org.apache.activemq.transport.nio.SelectorManager.maximumPmPoolSize=50&quot;</span> /&gt;</span> </span><br></pre></td></tr></table></figure>
+
+<p>官网上根据URL参数类型的作用，在不同网页介绍，没个统一参数表让我看的很迷糊。</p>
+<p>具体URL参数信息请看官网</p>
+<img src="/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/configure-uri.jpg" class="">
+
+
+
+<h2 id="ActiveMQ-的持久化机制："><a href="#ActiveMQ-的持久化机制：" class="headerlink" title="ActiveMQ 的持久化机制："></a>ActiveMQ 的持久化机制：</h2><p>​       为了避免意外宕机后丢失数据，消息系统一般都会采用持久化机制来保证重启后可以恢复消息队列。</p>
+<p>​       ActiveMQ的持久化机制有JDBC,AMQ,KahaDB和LevelDB,无论使用哪种持久化方式，消息的存储逻辑都是一样的。</p>
+<h3 id="AMQ-Message-Store"><a href="#AMQ-Message-Store" class="headerlink" title="AMQ Message Store:"></a>AMQ Message Store:</h3><p>一种的文件存储形式，具有写入速度快和容易恢复的特点。消息存储在一个个文件中，文件默认大小为32M，如果文件中的消息全部被消费，则该文件会被标记可删除，下一个清除阶段会被删除，<strong>适用于MQ5.3以前的版本。</strong></p>
+<h3 id="KahaDB消息存储："><a href="#KahaDB消息存储：" class="headerlink" title="KahaDB消息存储："></a>KahaDB消息存储：</h3><p>基于日志文件，从 ActiveMQ5.4版本默认使用的持久化插件。</p>
+<p>即使是最新的5.15版本，我自己装的就是5.15.9，配置文件中仍是kahaDB</p>
+<img src="/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/persistence-kahadb.jpg" class="">
+
+<p>它与其他持久化机制相比，文件组成十分简洁，仅有4类文件和一个lock文件锁：</p>
+<img src="/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/kahadb-component.jpg" class=""> 
+
+<p><strong>介绍：</strong></p>
+<h4 id="1、-db-log"><a href="#1、-db-log" class="headerlink" title="1、 db-.log"></a>1、 db-<NUMBER>.log</h4><p>KahaDB存储消息到预定义大小的数据记录文件中，文件命名为 db-<Number>.log。当数据文件已满时，文件会随之创建，number数值也会递增，它随之消息数量的增多，如每32M一个文件，文件名按照数字进行编号，如 db-1.log,db-2.log ,db-3.log,当不再有引用到数据文件中的任何消息时，文件会被删除或归档。</p>
+<h4 id="2、-db-data"><a href="#2、-db-data" class="headerlink" title="2、 db.data"></a>2、 db.data</h4><p>该文件包含了持久化的B-Tree索引，索引了消息数据记录中的消息，它是消息的索引文件，本质是B-Tree,B-Tree作为索引指向db-<Number>.log里面存储的信息。</p>
+<h4 id="3、db-free"><a href="#3、db-free" class="headerlink" title="3、db.free"></a>3、db.free</h4><p>当前db.data文件里哪些页面是空闲的，文件具体内容是所有空闲页的ID</p>
+<h4 id="4、db-redo"><a href="#4、db-redo" class="headerlink" title="4、db.redo"></a>4、db.redo</h4><p>作为消息恢复，如果KahaDB消息存储在强制退出后启动，用于恢复B-Tree的索引</p>
+<h4 id="5、lock文件锁"><a href="#5、lock文件锁" class="headerlink" title="5、lock文件锁"></a>5、lock文件锁</h4><p>表示当前获取KahaDB读取权限的broker</p>
+<h3 id="JDBC消息存储："><a href="#JDBC消息存储：" class="headerlink" title="JDBC消息存储："></a>JDBC消息存储：</h3><p>也就是说直接存储进mysql</p>
+<h4 id="jdbc配置："><a href="#jdbc配置：" class="headerlink" title="jdbc配置："></a>jdbc配置：</h4><p>第一步： 将 mysql连接包传入 activemq服务器lib目录下，我这里是 mysql-connector-java-5.1.38.jar</p>
+<p>第二步：在配置文件activemq.xml中将持久化机制设置为 jdbc，这个数据库名称mysql-ds是自己取的,注意要加一个 # ，我这里使用的是默认的名称</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">persistenceAdapter</span>&gt;</span> </span><br><span class="line">  <span class="tag">&lt;<span class="name">jdbcPersistenceAdapter</span> <span class="attr">dataSource</span>=<span class="string">&quot;#mysql-ds&quot;</span>/&gt;</span> </span><br><span class="line"><span class="tag">&lt;/<span class="name">persistenceAdapter</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>第三步：在配置文件activemq.xml中配置mysql数据库的信息,单独作为一个标签</p>
+<p>注意： activemq自带的是连接池jar包为 dbcp2，如果是想改成 C3PO连接池或者阿里的，请记得导入相应的jar包到 activemq服务器lib目录下</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!-- MySql DataSource Sample Setup --&gt;</span> </span><br><span class="line"> <span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">&quot;mysql-ds&quot;</span> <span class="attr">class</span>=<span class="string">&quot;org.apache.commons.dbcp2.BasicDataSource&quot;</span> <span class="attr">destroy-method</span>=<span class="string">&quot;close&quot;</span>&gt;</span> </span><br><span class="line">   <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">&quot;driverClassName&quot;</span> <span class="attr">value</span>=<span class="string">&quot;com.mysql.jdbc.Driver&quot;</span>/&gt;</span> </span><br><span class="line">   <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">&quot;url&quot;</span> <span class="attr">value</span>=<span class="string">&quot;jdbc:mysql://localhost/activemq?relaxAutoCommit=true&quot;</span>/&gt;</span> </span><br><span class="line">   <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">&quot;username&quot;</span> <span class="attr">value</span>=<span class="string">&quot;activemq&quot;</span>/&gt;</span> </span><br><span class="line">   <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">&quot;password&quot;</span> <span class="attr">value</span>=<span class="string">&quot;activemq&quot;</span>/&gt;</span> </span><br><span class="line">   <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">&quot;poolPreparedStatements&quot;</span> <span class="attr">value</span>=<span class="string">&quot;true&quot;</span>/&gt;</span> </span><br><span class="line"> <span class="tag">&lt;/<span class="name">bean</span>&gt;</span> </span><br></pre></td></tr></table></figure>
+
+<p>当我配置好，重启时发现无进程运行，又不报错</p>
+<p>然后发现了许多问题，如果有重启不成功的，可以查看我的一篇activemq的jdbc持久化问题解决的文章。</p>
+<p><strong>队列 Queue:</strong></p>
+<p>由于默认是持久化的，当我们队列点对点的发送消息，mysql的activemq_msgs表中有相关数据记录，这是因为持久化，消息保存在文件或者数据库中，当有任意消费者消费信息后会删除相应的信息。</p>
+<p>而当我们设置为非持久化时，消息是保存到内存中。</p>
+<p><strong>主题 Topic:</strong></p>
+<p>主题的发布者会将发布消息持久化到activemq_msgs表，同时订阅者记录在activemq_acks表中，消费后不删除消息记录。</p>
+<p><strong>activemq_acks</strong></p>
+<img src="/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/activemq_acks.jpg" class="">
+
+<p><strong>activemq_msgs</strong></p>
+<img src="/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/activemq_msgs.jpg" class="">
+
+
+
+<h3 id="ActiveMQ-Journel"><a href="#ActiveMQ-Journel" class="headerlink" title="ActiveMQ Journel"></a>ActiveMQ Journel</h3><p>每次消息的创建和消费，都需要去读写库。</p>
+<p>ActiveMQ journal 使用高速缓存写入技术，大大提高了性能。</p>
+<p><strong>当消费者的消费速度能够及时跟得上生产者消息的生产速度时，journal文件能够大大减少需要写入到DB的消息。</strong></p>
+<p><strong>这句话是什么意思呢？举个栗子</strong></p>
+<p>生产者生产了1000条消息，这1000条消息存入 journal文件中，如果消费者消费速度很快，消费了9000条，那么这个时候就只要同步剩下的1000条到数据库中，如果消费者消费速度慢，journal文件就会批量处理的方式写入到DB中。</p>
+<p>也就是说，消息消费快的时候， 大部分逻辑都在journal的高速内存中处理了，有点像redis哈。</p>
+<h4 id="如何配置-Journal"><a href="#如何配置-Journal" class="headerlink" title="如何配置 Journal"></a>如何配置 Journal</h4><p>注意 dataSource的名称</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">persistenceFactory</span>&gt;</span></span><br><span class="line">     <span class="tag">&lt;<span class="name">journalPersistenceAdapterFactory</span> </span></span><br><span class="line"><span class="tag">     <span class="attr">journalLogFiles</span>=<span class="string">&quot;5&quot;</span></span></span><br><span class="line"><span class="tag">     <span class="attr">journalLogFileSize</span>=<span class="string">&quot;32768&quot;</span></span></span><br><span class="line"><span class="tag">     <span class="attr">useQuickJournal</span> = <span class="string">&quot;true&quot;</span></span></span><br><span class="line"><span class="tag">     <span class="attr">dataDirectory</span>=<span class="string">&quot;activemq-data&quot;</span> </span></span><br><span class="line"><span class="tag">     <span class="attr">dataSource</span>=<span class="string">&quot;#mysql-ds&quot;</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">persistenceFactory</span>&gt;</span> </span><br></pre></td></tr></table></figure>
+
+<p><strong>修改 activemq.xml配置文件</strong></p>
+<p>以前是</p>
+<img src="/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/persistence_jdbc.jpg" class="">
+
+<p>现在改成</p>
+<img src="/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/persistence_journal.jpg" class="">
+
+<p><strong>测试：</strong></p>
+<p>当我们用生产者产生队列消息，刷新几秒都不会存入到mysql数据库，因为这个时候队列消息是存在journal高速缓存中。而消费者可以消费到产生的消息。当我们几分钟都不消费，才会写入到mysql数据库中。</p>
+<h2 id="ActiveMQ多节点集群："><a href="#ActiveMQ多节点集群：" class="headerlink" title="ActiveMQ多节点集群："></a>ActiveMQ多节点集群：</h2><h3 id="如何保证MQ高可用？"><a href="#如何保证MQ高可用？" class="headerlink" title="如何保证MQ高可用？"></a><strong>如何保证MQ高可用？</strong></h3><p>集群就完事了</p>
+<img src="/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/zookeeper.jpg" class="">
+
+<p>activemq5.9版本以后，基于zookeeper和leveldb搭建activemq集群 集群仅提供主备方式的高可用集群功能，避免单点故障</p>
+<p>zookeeper+replicated-leveldb-store的主从集群</p>
+<h3 id="zookeeper与activemq原理"><a href="#zookeeper与activemq原理" class="headerlink" title="zookeeper与activemq原理"></a>zookeeper与activemq原理</h3><p>使用ZooKeeper实现的Master-Slave实现方式，是对ActiveMQ进行高可用的一种有效的解决方案，高可用的原理：使用ZooKeeper（集群）注册所有的ActiveMQ Broker。只有其中的一个Broker可以对外提供服务（也就是Master节点），其他的Broker处于待机状态，被视为Slave。如果Master因故障而不能提供服务，则利用ZooKeeper的内部选举机制会从Slave中选举出一个Broker充当Master节点，继续对外提供服务。</p>
+<p>由于zookeeper没学，暂时这里不写了</p>
+<h3 id="配置步骤："><a href="#配置步骤：" class="headerlink" title="配置步骤："></a>配置步骤：</h3><p><strong>1、配置的话基本就是将activemq复制3份，然后配置相关端口</strong></p>
+<img src="/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/zk_port.jpg" class="">
+
+
+
+<p><strong>2、 修改管理控制台端口：</strong></p>
+<p>配置各个节点的端口，在jetty.xml 配置文件中 </p>
+<img src="/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/zk_jetty.jpg" class="">
+
+
+
+<p><strong>3、修改节点服务器的hostname，统一名称</strong></p>
+<img src="/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/zk_hostname.jpg" class=""> 
+
+
+
+<p><strong>4、在3个节点上的activemq.xml 配置持久化设置 ： zookeeper集群</strong></p>
+<p>注意这个bind端口的设置，3台机器对应不同的bind端口</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">persistenceAdapter</span>&gt;</span></span><br><span class="line">         <span class="tag">&lt;<span class="name">replicatedLevelDB</span></span></span><br><span class="line"><span class="tag">           <span class="attr">directory</span>=<span class="string">&quot;$&#123;activemq.data&#125;/leveldb&quot;</span></span></span><br><span class="line"><span class="tag">           <span class="attr">replicas</span>=<span class="string">&quot;3&quot;</span></span></span><br><span class="line"><span class="tag">           <span class="attr">bind</span>=<span class="string">&quot;tcp://0.0.0.0:63632&quot;</span></span></span><br><span class="line"><span class="tag">           <span class="attr">zkAddress</span>=<span class="string">&quot;localhost:2191,localhost:2192,localhost:2193&quot;</span></span></span><br><span class="line"><span class="tag">           <span class="attr">hostname</span>=<span class="string">&quot;duanyuefeng-server&quot;</span></span></span><br><span class="line"><span class="tag">           <span class="attr">sync</span>=<span class="string">&quot;local_disk&quot;</span></span></span><br><span class="line"><span class="tag">           <span class="attr">zkPath</span>=<span class="string">&quot;/activemq/leveldb-stores&quot;</span></span></span><br><span class="line"><span class="tag">           /&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">persistenceAdapter</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+
+
+<p><strong>5.按照顺序启动3个ActiveMQ节点， 到这步前题是zk集群已经成功启动运行</strong></p>
+<p><strong>测试可靠性，kill掉当前master的机器，看zookeeper是否从其他的slave中选择一台作为master</strong></p>
+<img src="/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/zk_master.jpg" class=""> 
+
+
+
+<h2 id="ActiveMQ-高级特性："><a href="#ActiveMQ-高级特性：" class="headerlink" title="ActiveMQ 高级特性："></a>ActiveMQ 高级特性：</h2><h3 id="1、引入消息队列之后该如何保证其高可用性"><a href="#1、引入消息队列之后该如何保证其高可用性" class="headerlink" title="1、引入消息队列之后该如何保证其高可用性"></a>1、引入消息队列之后该如何保证其高可用性</h3><p>zookeeper和leveldb搭建activemq集群</p>
+<h3 id="2、异步投递Async-Sends"><a href="#2、异步投递Async-Sends" class="headerlink" title="2、异步投递Async Sends"></a>2、异步投递Async Sends</h3><p>ActiveMQ支持同步、异步两种发送的模式将消息发送到broker，模式的选择对发送延迟有巨大的影响。produce能达到怎样的产出率</p>
+<p>（产出率&#x3D;发送数据总量&#x2F;时间）主要受发送延时的影响，使用异步发送可以显著的提高发送的性能。</p>
+<p><strong>ActiveMQ默认使用异步发送的模式</strong></p>
+<p><strong>同步发送的情景：</strong></p>
+<ul>
+<li>明确指定使用同步发送的方式</li>
+<li>未使用事务的前提下发送持久化的信息</li>
+</ul>
+<p>如果你没有使用事务且发送的是持久化信息，每一次发送都是同步发送的且会堵塞producer 直到broker返回一个确认，表示消息已经被安全的持久化到磁盘。</p>
+<p>确认机制提供了消息安全的保障，但同时会阻塞客户端带来很大的延时。</p>
+<p>很多高性能的应用，<strong>允许在失败的情况下有少量的数据丢失</strong>。如果你的应用满足这个特点，你可以使用异步发送来提高生产率，即使发送的是持久化的消息。</p>
+<p><strong>异步发送</strong></p>
+<p>它可以最大化producer端的发送效率，我们通常在发送消息量比较密集的情况下使用异步发送，可以很大的提升 producer性能。</p>
+<p>不过这也带来了额外的问题</p>
+<p>就是需要消耗较多的Client端内存同时也会导致broker端性能消耗增加；</p>
+<p>此外它不能有效的确保消息的发送成功。在useAsyncSend&#x3D;true的情况下，客户端需要容忍消息丢失的可能。</p>
+<p>设置方式</p>
+<img src="/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/async_setting.jpg" class=""> 
+
+
+
+<h3 id="3、-那如何确定异步发送成功呢？"><a href="#3、-那如何确定异步发送成功呢？" class="headerlink" title="3、 那如何确定异步发送成功呢？"></a>3、 那如何确定异步发送成功呢？</h3><h4 id="异步发送丢失消息的场景是："><a href="#异步发送丢失消息的场景是：" class="headerlink" title="异步发送丢失消息的场景是："></a><strong>异步发送丢失消息的场景是：</strong></h4><p>生产者设置 UseAsyncSend&#x3D;true,使用producer.send(msg)持续发送消息。</p>
+<p>由于消息不阻塞，生产者会认为所有send消息均被成功发送至MQ</p>
+<p>如果MQ突然宕机，此时生产者端内存中尚未被发送至MQ的消息 会丢失。</p>
+<p>所以，正确的异步发送方法是需要接受回调的。</p>
+<h4 id="同步发送和异步发送的区别："><a href="#同步发送和异步发送的区别：" class="headerlink" title="同步发送和异步发送的区别："></a><strong>同步发送和异步发送的区别：</strong></h4><p>同步发送等send不阻塞了就表示一定发送成功了。</p>
+<p>异步发送需要接受回执并由客户端再判断一次是否发送成功。</p>
+<p>需要写一个消息回调函数进行判断</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">message = session.createTextMessage(<span class="string">&quot;async msg---&quot;</span> + i);</span><br><span class="line">message.setJMSMessageID(UUID.randomUUID().toString() + <span class="string">&quot;--order &quot;</span>);</span><br><span class="line"><span class="type">String</span> <span class="variable">msgID</span> <span class="operator">=</span> message.getJMSMessageID();</span><br><span class="line">activeMQMessageProducer.send(message, <span class="keyword">new</span> <span class="title class_">AsyncCallback</span>() &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onSuccess</span><span class="params">()</span> &#123;</span><br><span class="line">        System.out.println(msgID + <span class="string">&quot;has been send success!&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onException</span><span class="params">(JMSException e)</span> &#123;</span><br><span class="line">        System.out.println(msgID + <span class="string">&quot;fail to end!&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="3、-延时投递和定时投递"><a href="#3、-延时投递和定时投递" class="headerlink" title="3、 延时投递和定时投递"></a>3、 延时投递和定时投递</h2><p> 需开启 activemq.xml中 broker标签的一个属性 schedulerSupport</p>
+<img src="/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/delay_setting.jpg" class="">
+
+<p>示例：</p>
+<img src="/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/delay_example.jpg" class="">
+
+<h3 id="四大属性"><a href="#四大属性" class="headerlink" title="四大属性"></a>四大属性</h3><img src="/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/delay_property.jpg" class="">
+
+<h3 id="官网设置的代码"><a href="#官网设置的代码" class="headerlink" title="官网设置的代码"></a>官网设置的代码</h3><img src="/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/delay_setting2.jpg" class="">
+
+<p>示例：设置消息延迟3秒发送，重复发送5次，每次隔4秒</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">long</span> <span class="variable">delay</span> <span class="operator">=</span> <span class="number">3</span> * <span class="number">1000</span>;</span><br><span class="line"><span class="type">long</span> <span class="variable">period</span> <span class="operator">=</span> <span class="number">4</span> * <span class="number">1000</span>;</span><br><span class="line"><span class="type">int</span> <span class="variable">repeat</span> <span class="operator">=</span> <span class="number">5</span>;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="type">TextMessage</span> <span class="variable">message</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line"><span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>; i &lt;= <span class="number">3</span>; i++) &#123;</span><br><span class="line">    message = session.createTextMessage(<span class="string">&quot;delay msg---&quot;</span> + i);</span><br><span class="line">    message.setLongProperty(ScheduledMessage.AMQ_SCHEDULED_DELAY,delay);</span><br><span class="line">    message.setLongProperty(ScheduledMessage.AMQ_SCHEDULED_PERIOD,period);</span><br><span class="line">    message.setIntProperty(ScheduledMessage.AMQ_SCHEDULED_REPEAT,repeat);</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+<hr>
+<h2 id="ActiveMQ的消息重试机制："><a href="#ActiveMQ的消息重试机制：" class="headerlink" title="ActiveMQ的消息重试机制："></a>ActiveMQ的消息重试机制：</h2><h3 id="哪些情况会导致消息重发？"><a href="#哪些情况会导致消息重发？" class="headerlink" title="哪些情况会导致消息重发？"></a>哪些情况会导致消息重发？</h3><ol>
+<li>Client用了 transactions 且 在session中调用了 rollback()</li>
+<li>Client用了transactions 且在调用commit() 之前关闭或者没有commit</li>
+<li>Client在CLIENT_ACKNOWLEDGE的传递模式下，在session中调用了recover()</li>
+</ol>
+<h3 id="消息时间重发间隔与重发次数？"><a href="#消息时间重发间隔与重发次数？" class="headerlink" title="消息时间重发间隔与重发次数？"></a>消息时间重发间隔与重发次数？</h3><p>间隔： 1</p>
+<p>次数： 6</p>
+<h3 id="有毒消息-Posion-ACK"><a href="#有毒消息-Posion-ACK" class="headerlink" title="有毒消息 Posion ACK"></a>有毒消息 Posion ACK</h3><img src="/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/posion_ack.jpg" class="">
+
+<p>一个消息被redelivedred 超过默认的最大重发次数（6次），消费端会给MQ发送一个 “poison ack”表示这个消息有毒，告诉broker不要再发了，这个时候broker会把这个消息放到DLQ（死信队列）</p>
+<img src="/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/posion_property.jpg" class="">
+
+<p>测试： 消费者开启事务，session不commit，消费7次后（第一次失败+6次重发）</p>
+<p>标记为死信队列</p>
+<img src="/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/activemq_DLQ.jpg" class="">
+
+<img src="/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/mysql_DLQ.jpg" class="">
+
+<p>可以自己设置相关属性</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">ActiveMQConnectionFactory</span> <span class="variable">activeMQConnectionFactory</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ActiveMQConnectionFactory</span>(ACTIVEMQ_URL);</span><br><span class="line"></span><br><span class="line"><span class="type">RedeliveryPolicy</span> <span class="variable">redeliveryPolicy</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">RedeliveryPolicy</span>();</span><br><span class="line"><span class="comment">// 设置最大重发次数为3次</span></span><br><span class="line">redeliveryPolicy.setMaximumRedeliveries(<span class="number">2</span>);</span><br><span class="line">activeMQConnectionFactory.setRedeliveryPolicy(redeliveryPolicy);</span><br><span class="line"><span class="type">Connection</span> <span class="variable">connection</span> <span class="operator">=</span> activeMQConnectionFactory.createConnection();</span><br><span class="line">connection.start();</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="死信队列："><a href="#死信队列：" class="headerlink" title="死信队列："></a>死信队列：</h2><img src="/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/DLQ_example.jpg" class="">
+
+<img src="/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/module_DLQ.jpg" class="">
+
+
+
+
+
+<h2 id="如何保证消息不被重复消费呢？谈谈幂等性问题。"><a href="#如何保证消息不被重复消费呢？谈谈幂等性问题。" class="headerlink" title="如何保证消息不被重复消费呢？谈谈幂等性问题。"></a>如何保证消息不被重复消费呢？谈谈幂等性问题。</h2><p>给消息一个唯一主键，如果数据库已有该主键，证明重复消费了。</p>
+<p>或者是用redis 记录&lt;ID,message&gt;</p>
+<p>redis,set(id,message)</p>
+<p>set(ID: xx-324234-4234234-1:1:!:!,UUID.randomUUID());</p>
+<p>做数据重复检测</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>本文作者： </strong>EiletXie
+  </li>
+  <li class="post-copyright-link">
+      <strong>本文链接：</strong>
+      <a href="https://eiletxie.github.io/2019/08/25/%E6%B6%88%E6%81%AF%E4%B8%AD%E9%97%B4%E4%BB%B6-ActiveMQ/" title="消息中间件-ActiveMQ">https://eiletxie.github.io/2019/08/25/消息中间件-ActiveMQ/</a>
+  </li>
+  <li class="post-copyright-license">
+      <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/ActiveMQ/" rel="tag"># ActiveMQ</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2019/08/20/Ribbon%E5%9C%A8SpringCloud%E6%98%AF%E6%80%8E%E4%B9%88%E4%BD%BF%E7%94%A8%E7%9A%84%EF%BC%9F/" rel="prev" title="Ribbon在SpringCloud是怎么使用的？">
+                  <i class="fa fa-angle-left"></i> Ribbon在SpringCloud是怎么使用的？
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2019/08/26/ActiveMQ%E9%85%8D%E7%BD%AEjdbc%E6%8C%81%E4%B9%85%E5%8C%96%E5%87%BA%E7%8E%B0%E7%9A%84%E9%97%AE%E9%A2%98/" rel="next" title="ActiveMQ配置jdbc持久化出现的问题">
+                  ActiveMQ配置jdbc持久化出现的问题 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">EiletXie</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">225k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">3:25</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+
+  <a href="https://github.com/EiletXie" class="github-corner" title="在 GitHub 上关注我" aria-label="在 GitHub 上关注我" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

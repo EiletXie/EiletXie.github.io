@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.1">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-minimal.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous" defer></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"eiletxie.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"a11y-dark","dark":"a11y-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="接触命令模式是了解SpringCloud中的Hystrix组件时遇到的，觉得挺有意思的便单独拿出来写成一篇博客来加深自己的理解。   简要定义：​        命令模式（Command) : 将一个请求封装为一个对象，从而使你可用不同的请求对客户进行参数化；对请求排队或记录请求日志，以及支持可撤销的操作。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="命令模式">
+<meta property="og:url" content="https://eiletxie.github.io/2019/12/25/%E5%91%BD%E4%BB%A4%E6%A8%A1%E5%BC%8F/index.html">
+<meta property="og:site_name" content="EiletXie Blog">
+<meta property="og:description" content="接触命令模式是了解SpringCloud中的Hystrix组件时遇到的，觉得挺有意思的便单独拿出来写成一篇博客来加深自己的理解。   简要定义：​        命令模式（Command) : 将一个请求封装为一个对象，从而使你可用不同的请求对客户进行参数化；对请求排队或记录请求日志，以及支持可撤销的操作。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://eiletxie.github.io/2019/12/25/%E5%91%BD%E4%BB%A4%E6%A8%A1%E5%BC%8F/UML.jpg">
+<meta property="article:published_time" content="2019-12-25T02:25:06.000Z">
+<meta property="article:modified_time" content="2020-01-08T07:03:40.632Z">
+<meta property="article:author" content="EiletXie">
+<meta property="article:tag" content="命令模式">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://eiletxie.github.io/2019/12/25/%E5%91%BD%E4%BB%A4%E6%A8%A1%E5%BC%8F/UML.jpg">
+
+
+<link rel="canonical" href="https://eiletxie.github.io/2019/12/25/%E5%91%BD%E4%BB%A4%E6%A8%A1%E5%BC%8F/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://eiletxie.github.io/2019/12/25/%E5%91%BD%E4%BB%A4%E6%A8%A1%E5%BC%8F/","path":"2019/12/25/命令模式/","title":"命令模式"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>命令模式 | EiletXie Blog</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.5.0/search.js" integrity="sha256-xFC6PJ82SL9b3WkGjFavNiA9gm5z6UBxWPiu4CYjptg=" crossorigin="anonymous" defer></script>
+<script src="/js/third-party/search/local-search.js" defer></script>
+
+
+
+
+
+  <script src="/js/third-party/pace.js" defer></script>
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">EiletXie Blog</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">不忘初心 Keep Moving</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AE%80%E8%A6%81%E5%AE%9A%E4%B9%89%EF%BC%9A"><span class="nav-number">1.</span> <span class="nav-text">简要定义：</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BB%8E%E5%BE%AE%E6%9C%8D%E5%8A%A1%E8%B0%83%E7%94%A8%E6%9D%A5%E7%9C%8B"><span class="nav-number">1.1.</span> <span class="nav-text">从微服务调用来看</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BB%8E%E7%94%9F%E6%B4%BB%E5%9C%BA%E6%99%AF%E6%9D%A5%E7%9C%8B"><span class="nav-number">1.2.</span> <span class="nav-text">从生活场景来看</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9D%A5%E7%90%86%E4%B8%80%E4%B8%8B%E7%B1%BB%E5%9B%BE%E4%B8%AD%E7%9A%84%E8%B0%83%E7%94%A8%EF%BC%9A"><span class="nav-number">1.3.</span> <span class="nav-text">来理一下类图中的调用：</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%91%BD%E4%BB%A4%E6%A8%A1%E5%BC%8F%E7%9A%84%E4%BC%98%E7%82%B9"><span class="nav-number">2.</span> <span class="nav-text">命令模式的优点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%91%BD%E4%BB%A4%E6%A8%A1%E5%BC%8F%E7%9A%84%E7%BC%BA%E7%82%B9"><span class="nav-number">3.</span> <span class="nav-text">命令模式的缺点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%91%BD%E4%BB%A4%E6%A8%A1%E5%BC%8F%E7%9A%84%E9%80%82%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="nav-number">4.</span> <span class="nav-text">命令模式的适用场景</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">5.</span> <span class="nav-text">参考</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="EiletXie"
+      src="/img/header.jpg">
+  <p class="site-author-name" itemprop="name">EiletXie</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">47</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">分类</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">32</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+  <div class="cc-license animated" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" rel="noopener" target="_blank"><img src="https://cdnjs.cloudflare.com/ajax/libs/creativecommons-vocabulary/2020.11.3/assets/license_badges/small/by_nc_sa.svg" alt="Creative Commons"></a>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://eiletxie.github.io/2019/12/25/%E5%91%BD%E4%BB%A4%E6%A8%A1%E5%BC%8F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/img/header.jpg">
+      <meta itemprop="name" content="EiletXie">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="EiletXie Blog">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="命令模式 | EiletXie Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          命令模式
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2019-12-25 10:25:06" itemprop="dateCreated datePublished" datetime="2019-12-25T10:25:06+08:00">2019-12-25</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2020-01-08 15:03:40" itemprop="dateModified" datetime="2020-01-08T15:03:40+08:00">2020-01-08</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" itemprop="url" rel="index"><span itemprop="name">设计模式</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>3.8k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>3 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>接触命令模式是了解SpringCloud中的Hystrix组件时遇到的，觉得挺有意思的便单独拿出来写成一篇博客来加深自己的理解。</p>
+<br/>
+
+<h3 id="简要定义："><a href="#简要定义：" class="headerlink" title="简要定义："></a>简要定义：</h3><p>​        命令模式（Command) : 将一个请求封装为一个对象，从而使你可用不同的请求对客户进行参数化；对请求排队或记录请求日志，以及支持可撤销的操作。</p>
+<br/>
+<span id="more"></span>
+
+<p>我们通过该模式的类图来分析调用关系</p>
+ <img src="/2019/12/25/%E5%91%BD%E4%BB%A4%E6%A8%A1%E5%BC%8F/UML.jpg" class="" title="类图">
+
+<br/>
+
+<p>分析这5个角色的作用</p>
+<ul>
+<li>Client-客户端： 客户端调用相关代码，创建具体命令对象ConcreateCommand并设定其接受者Receiver</li>
+<li>Invoker-调用类： 传入命令实现类，要求相关命令执行该请求</li>
+<li>Receiver-接受类：它是实际的执行者，知道如何实施与执行一个请求相关的操作，任何类都有可能成为一个接受者</li>
+<li>Command-命令接口： 用来声明执行操作的接口</li>
+<li>ConcreateCommand-命令实现类： 将一个接受者对象绑定于一个动作，调用接受者相应的操作已实现Execute</li>
+</ul>
+<br/>
+
+<p>可能看这些定义，你们对调用者、接受者、命令比较模糊，我先举两个简单的例子</p>
+<h4 id="从微服务调用来看"><a href="#从微服务调用来看" class="headerlink" title="从微服务调用来看"></a>从微服务调用来看</h4><p>调用者(A服务) -&gt; 下达命令 (即请求消费其他服务功能) -&gt; 接受者（其他服务B,C） 接受命令执行具体逻辑</p>
+<br/>
+
+<h4 id="从生活场景来看"><a href="#从生活场景来看" class="headerlink" title="从生活场景来看"></a>从生活场景来看</h4><p>调用者(用户) -&gt; 下达命令（命令A：买苹果，命令B：买香蕉）-&gt; 接受者(水果店老板) 接受命令切水果算总价</p>
+<br/>
+
+
+
+<h4 id="来理一下类图中的调用："><a href="#来理一下类图中的调用：" class="headerlink" title="来理一下类图中的调用："></a>来理一下类图中的调用：</h4><p>Command接口来对应不同的命令实现类，每个命令实现类中有一个Receiver属性，命令执行的方法实际具体执行对象是Receiver对应的相关的action方法。</p>
+<p>Invoker调用者中包含 Command属性，进行具体命令的调用。</p>
+<br/>
+
+
+
+<p><strong>这种比直接的 invoker调用Receiver的好处有哪些呢？</strong></p>
+<p>首先 invoker不直接调用 Receiver，而是通过相关命令对象来执行action，实现了松耦合</p>
+<p>另外我们可以在invoker中根据业务情景加入日志记录，删除命令等功能</p>
+<p>缺点： 如果命令很多就得创建多个具体的命令实现类了</p>
+<br/>
+
+<p>这里可能无法理解，我通过代码和一个业务场景让大家来理解。</p>
+<p>来看简要的代码</p>
+<p>Receiver-接受类</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Receiver</span> &#123;</span><br><span class="line">     <span class="comment">// 真正执行命令相应的操作</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">action</span><span class="params">()</span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;执行操作&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<br/>
+
+<p>Command接口</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">Command</span> &#123;</span><br><span class="line">    <span class="comment">// 执行方法</span></span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">execute</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<br/>
+
+<p>ConcreteCommand-命令具体实现类(买苹果、香蕉)</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ConcreteCommand</span> <span class="keyword">implements</span> <span class="title class_">Command</span> &#123;</span><br><span class="line">    <span class="comment">//持有相应的接收者对象</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">Receiver</span> <span class="variable">receiver</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">    <span class="comment">// 构造方法</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">ConcreteCommand</span><span class="params">(Receiver receiver)</span>&#123;</span><br><span class="line">        <span class="built_in">this</span>.receiver = receiver;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">execute</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="comment">//通常会转调接收者对象的相应方法，让接收者来真正执行功能</span></span><br><span class="line">        receiver.action();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<br/>
+
+<p>Invoker-调用者(发命令的人)</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Invoker</span> &#123;</span><br><span class="line">     <span class="comment">// 持有命令对象</span></span><br><span class="line">    <span class="keyword">private</span> <span class="type">Command</span> <span class="variable">command</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line"></span><br><span class="line">     <span class="comment">//构造方法</span></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Invoker</span><span class="params">(Command command)</span>&#123;</span><br><span class="line">        <span class="built_in">this</span>.command = command;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//行动方法</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">action</span><span class="params">()</span>&#123;</span><br><span class="line">        command.execute();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<br/>
+
+<p>客户端（组装整套流程）</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Client</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="comment">//创建接收者</span></span><br><span class="line">        <span class="type">Receiver</span> <span class="variable">receiver</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Receiver</span>();</span><br><span class="line">        <span class="comment">//创建命令对象，设定它的接收者</span></span><br><span class="line">        <span class="type">Command</span> <span class="variable">command</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ConcreteCommand</span>(receiver);</span><br><span class="line">        <span class="comment">//创建请求者，把命令对象设置进去</span></span><br><span class="line">        <span class="type">Invoker</span> <span class="variable">invoker</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Invoker</span>(command);</span><br><span class="line">        <span class="comment">//执行方法</span></span><br><span class="line">        invoker.action();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<br/>
+
+<p>现在我们看这个代码，感觉直接调用效果差不多，那么我们换一种业务场景</p>
+<p>用户下单，要买10种水果，每种水果不同的价钱，不同的切法，中途不要两种水果了，如果你是店家你该如何接受记录这些命令来计算价钱和日志记录呢？</p>
+<p>来看看大概的业务代码</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 水果店老板 接受者</span></span><br><span class="line"><span class="type">Receiver</span> <span class="variable">receiver</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Receiver</span>()；</span><br><span class="line"></span><br><span class="line"><span class="type">Command</span> <span class="variable">apple</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">AppleCommand</span>(receiver);</span><br><span class="line"><span class="type">Command</span> <span class="variable">banana</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BananaCommand</span>(receiver);  <span class="comment">// 每个水果命令中实际包含价格计算，日志记录</span></span><br><span class="line">.... <span class="number">10</span>种水果</span><br><span class="line"></span><br><span class="line"><span class="comment">//这里新建一个 List&lt;Command&gt;</span></span><br><span class="line">List&lt;Command&gt; lists = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">list.add(banana);</span><br><span class="line">list.add(apple); <span class="comment">//.... 添加10种</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 买家 请求者</span></span><br><span class="line">  <span class="type">Invoker</span> <span class="variable">invoker</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Invoker</span>(lists);</span><br><span class="line">  invoker.removeCommand(apple); <span class="comment">//..删除水果命令</span></span><br><span class="line">  invoker.action(); <span class="comment">// 结账</span></span><br></pre></td></tr></table></figure>
+
+
+
+<p>从这个示例我们可以看出什么？</p>
+<p>接受者 Receiver 和 调用者 Invoker 之间几乎没有耦合，双方都不需要理会对方是如何操作的，只需要关注命令即可，这就是命令模式最大的好处。</p>
+<br/>
+
+<p>好我们重新再来理解一下命令模式的优缺点。</p>
+<h3 id="命令模式的优点"><a href="#命令模式的优点" class="headerlink" title="命令模式的优点"></a>命令模式的优点</h3><p>​     <strong>封装性</strong>：每个命令都被封装起来，对于客户端来说，需要什么功能就去调用相应的命令，而无需知道命令具体是怎么执行的。比如有一组文件操作的命令：新建文件、复制文件、删除文件。如果把这三个操作都封装成一个命令类，客户端只需要知道有这三个命令类即可，至于命令类中封装好的逻辑，客户端则无需知道。</p>
+<p>​     <strong>可拓展性</strong>：在命令模式中，在接收者类中一般会对操作进行最基本的封装，命令类则通过对这些基本的操作进行二次封装，当增加新命令的时候，对命令类的编写一般不是从零开始的，有大量的接收者类可供调用，也有大量的命令类可供调用，代码的复用性很好。比如，文件的操作中，我们需要增加一个剪切文件的命令，则只需要把复制文件和删除文件这两个命令组合一下就行了，非常方便。</p>
+<h3 id="命令模式的缺点"><a href="#命令模式的缺点" class="headerlink" title="命令模式的缺点"></a>命令模式的缺点</h3><p>那就是命令如果很多，开发起来就要头疼了。特别是很多简单的命令，实现起来就几行代码的事，而使用命令模式的话，不用管命令多简单，都需要写一个命令类来封装。</p>
+<br/>
+
+ 
+
+
+
+<h3 id="命令模式的适用场景"><a href="#命令模式的适用场景" class="headerlink" title="命令模式的适用场景"></a>命令模式的适用场景</h3><p>​       对于大多数请求-响应模式的功能，比较适合使用命令模式，正如命令模式定义说的那样，命令模式对实现记录日志、撤销操作等功能比较方便。</p>
+<p>Command模式通常可应用到很多场景中，我这里列举常见的四种： </p>
+<p> 1、Multi-level undo（多级undo操作） </p>
+<p>​    如果系统需要实现多级回退操作，这时如果所有用户的操作都以command对象的形式实现，系统可以简单地用stack来保存最近执行的命令，如果用户需要执      行undo操作，系统只需简单地popup一个最近的command对象然后执行它的undo()方法既可。 </p>
+<br/>
+
+<p>2、Progress bars（状态条） </p>
+<p>​    假如系统需要按顺序执行一系列的命令操作，如果每个command对象都提供一个 </p>
+<p>​    getEstimatedDuration()方法，那么系统可以简单地评估执行状态并显示出合适的状态条。</p>
+<br/>
+
+<p>3、Thread pools（线程池） </p>
+<p>​    通常一个典型的线程池实现类可能有一个名为addTask()的public方法，用来添加一项工作任务到任务 </p>
+<p>​    队列中。该任务队列中的所有任务可以用command对象来封装，通常这些command对象会实现一个通用的 </p>
+<p>​    接口比如java.lang.Runnable。 </p>
+<br/>
+
+<p>4、Networking(网络服务调用)</p>
+<p>​     通过网络发送command命令到其他机器上运行。 </p>
+<br/>
+
+<p>5、Wizards（导航） </p>
+<p>​     注意：这里的导航指的是网站导航</p>
+<p>​    通常一个使用多个wizard页面来共同完成一个简单动作。一个自然的方法是使用一个command对象来封 </p>
+<p>​    装wizard过程，该command对象在第一个wizard页面显示时被创建，每个wizard页面接收用户输入并设 </p>
+<p>​    置到该command对象中，当最后一个wizard页面用户按下“Finish”按钮时，可以简单地触发一个事件 </p>
+<p>​    调用execute()方法执行整个动作。通过这种方法，command类不包含任何跟用户界面有关的代码，可以 </p>
+<p>​    分离用户界面与具体的处理逻辑。</p>
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><p>博文：<a target="_blank" rel="noopener" href="https://blog.csdn.net/zhengzhb/article/details/7550895">https://blog.csdn.net/zhengzhb/article/details/7550895</a></p>
+<p>书籍： 大话设计模式</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>本文作者： </strong>EiletXie
+  </li>
+  <li class="post-copyright-link">
+      <strong>本文链接：</strong>
+      <a href="https://eiletxie.github.io/2019/12/25/%E5%91%BD%E4%BB%A4%E6%A8%A1%E5%BC%8F/" title="命令模式">https://eiletxie.github.io/2019/12/25/命令模式/</a>
+  </li>
+  <li class="post-copyright-license">
+      <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/%E5%91%BD%E4%BB%A4%E6%A8%A1%E5%BC%8F/" rel="tag"># 命令模式</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2019/12/08/%E8%81%8A%E8%81%8AHashMap%E4%B8%AD%E7%9A%84%E8%AE%BE%E8%AE%A1/" rel="prev" title="聊聊HashMap中的设计">
+                  <i class="fa fa-angle-left"></i> 聊聊HashMap中的设计
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2019/12/27/ConcurrentHashMap%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90/" rel="next" title="ConcurrentHashMap源码解析">
+                  ConcurrentHashMap源码解析 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">EiletXie</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">225k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">3:25</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+
+  <a href="https://github.com/EiletXie" class="github-corner" title="在 GitHub 上关注我" aria-label="在 GitHub 上关注我" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

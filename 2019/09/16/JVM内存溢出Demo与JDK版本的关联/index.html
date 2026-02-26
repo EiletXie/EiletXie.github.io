@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.1">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-minimal.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous" defer></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"eiletxie.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"a11y-dark","dark":"a11y-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="JVM内存溢出Demo与JDK版本的关联​         最近看经典的JVM书籍，周志明的《深入理解JAVA虚拟机》第三版，看到很多不错JVM内存溢出示例，我这里拿JDK1.6和JDK1.8版本进行了Demo的测试和总结。 通过该文章，您可以了解相关知识  不同类型的内存溢出应该是在哪种情形下，哪块区域的问题 相关的JVM参数设置，调优 相同的代码、不同JDK版本造成内存溢出的类型不同  先列出">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JVM内存溢出Demo与JDK版本的关联">
+<meta property="og:url" content="https://eiletxie.github.io/2019/09/16/JVM%E5%86%85%E5%AD%98%E6%BA%A2%E5%87%BADemo%E4%B8%8EJDK%E7%89%88%E6%9C%AC%E7%9A%84%E5%85%B3%E8%81%94/index.html">
+<meta property="og:site_name" content="EiletXie Blog">
+<meta property="og:description" content="JVM内存溢出Demo与JDK版本的关联​         最近看经典的JVM书籍，周志明的《深入理解JAVA虚拟机》第三版，看到很多不错JVM内存溢出示例，我这里拿JDK1.6和JDK1.8版本进行了Demo的测试和总结。 通过该文章，您可以了解相关知识  不同类型的内存溢出应该是在哪种情形下，哪块区域的问题 相关的JVM参数设置，调优 相同的代码、不同JDK版本造成内存溢出的类型不同  先列出">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://eiletxie.github.io/2019/09/16/JVM%E5%86%85%E5%AD%98%E6%BA%A2%E5%87%BADemo%E4%B8%8EJDK%E7%89%88%E6%9C%AC%E7%9A%84%E5%85%B3%E8%81%94/stack2.jpg">
+<meta property="og:image" content="https://eiletxie.github.io/2019/09/16/JVM%E5%86%85%E5%AD%98%E6%BA%A2%E5%87%BADemo%E4%B8%8EJDK%E7%89%88%E6%9C%AC%E7%9A%84%E5%85%B3%E8%81%94/stack.jpg">
+<meta property="og:image" content="https://eiletxie.github.io/2019/09/16/JVM%E5%86%85%E5%AD%98%E6%BA%A2%E5%87%BADemo%E4%B8%8EJDK%E7%89%88%E6%9C%AC%E7%9A%84%E5%85%B3%E8%81%94/heap.jpg">
+<meta property="og:image" content="https://eiletxie.github.io/2019/09/16/JVM%E5%86%85%E5%AD%98%E6%BA%A2%E5%87%BADemo%E4%B8%8EJDK%E7%89%88%E6%9C%AC%E7%9A%84%E5%85%B3%E8%81%94/pool.jpg">
+<meta property="og:image" content="https://eiletxie.github.io/2019/09/16/JVM%E5%86%85%E5%AD%98%E6%BA%A2%E5%87%BADemo%E4%B8%8EJDK%E7%89%88%E6%9C%AC%E7%9A%84%E5%85%B3%E8%81%94/pool2.jpg">
+<meta property="og:image" content="https://eiletxie.github.io/2019/09/16/JVM%E5%86%85%E5%AD%98%E6%BA%A2%E5%87%BADemo%E4%B8%8EJDK%E7%89%88%E6%9C%AC%E7%9A%84%E5%85%B3%E8%81%94/method.jpg">
+<meta property="og:image" content="https://eiletxie.github.io/2019/09/16/JVM%E5%86%85%E5%AD%98%E6%BA%A2%E5%87%BADemo%E4%B8%8EJDK%E7%89%88%E6%9C%AC%E7%9A%84%E5%85%B3%E8%81%94/method2.jpg">
+<meta property="og:image" content="https://eiletxie.github.io/2019/09/16/JVM%E5%86%85%E5%AD%98%E6%BA%A2%E5%87%BADemo%E4%B8%8EJDK%E7%89%88%E6%9C%AC%E7%9A%84%E5%85%B3%E8%81%94/direct.jpg">
+<meta property="article:published_time" content="2019-09-16T05:12:22.000Z">
+<meta property="article:modified_time" content="2019-12-08T07:09:17.783Z">
+<meta property="article:author" content="EiletXie">
+<meta property="article:tag" content="JVM">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://eiletxie.github.io/2019/09/16/JVM%E5%86%85%E5%AD%98%E6%BA%A2%E5%87%BADemo%E4%B8%8EJDK%E7%89%88%E6%9C%AC%E7%9A%84%E5%85%B3%E8%81%94/stack2.jpg">
+
+
+<link rel="canonical" href="https://eiletxie.github.io/2019/09/16/JVM%E5%86%85%E5%AD%98%E6%BA%A2%E5%87%BADemo%E4%B8%8EJDK%E7%89%88%E6%9C%AC%E7%9A%84%E5%85%B3%E8%81%94/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://eiletxie.github.io/2019/09/16/JVM%E5%86%85%E5%AD%98%E6%BA%A2%E5%87%BADemo%E4%B8%8EJDK%E7%89%88%E6%9C%AC%E7%9A%84%E5%85%B3%E8%81%94/","path":"2019/09/16/JVM内存溢出Demo与JDK版本的关联/","title":"JVM内存溢出Demo与JDK版本的关联"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>JVM内存溢出Demo与JDK版本的关联 | EiletXie Blog</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.5.0/search.js" integrity="sha256-xFC6PJ82SL9b3WkGjFavNiA9gm5z6UBxWPiu4CYjptg=" crossorigin="anonymous" defer></script>
+<script src="/js/third-party/search/local-search.js" defer></script>
+
+
+
+
+
+  <script src="/js/third-party/pace.js" defer></script>
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">EiletXie Blog</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">不忘初心 Keep Moving</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#JVM%E5%86%85%E5%AD%98%E6%BA%A2%E5%87%BADemo%E4%B8%8EJDK%E7%89%88%E6%9C%AC%E7%9A%84%E5%85%B3%E8%81%94"><span class="nav-number">1.</span> <span class="nav-text">JVM内存溢出Demo与JDK版本的关联</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A0%88%E6%BA%A2%E5%87%BA"><span class="nav-number">1.1.</span> <span class="nav-text">栈溢出</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#java-lang-StackOverflowError"><span class="nav-number">1.1.1.</span> <span class="nav-text">java.lang.StackOverflowError</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#JVM%E5%8F%82%E6%95%B0"><span class="nav-number">1.1.1.1.</span> <span class="nav-text">JVM参数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BA%A7%E7%94%9F%E7%9A%84%E6%83%85%E5%BD%A2"><span class="nav-number">1.1.1.2.</span> <span class="nav-text">产生的情形</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%A4%BA%E4%BE%8B%E4%BB%A3%E7%A0%81"><span class="nav-number">1.1.1.3.</span> <span class="nav-text">示例代码</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%BF%90%E8%A1%8C%E6%8A%A5%E9%94%99"><span class="nav-number">1.1.1.4.</span> <span class="nav-text">运行报错</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#java-lang-OutOfMemoryError"><span class="nav-number">1.1.2.</span> <span class="nav-text">java.lang.OutOfMemoryError</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#java-lang-OutOfMemoryError-Java-heap-space"><span class="nav-number">1.1.3.</span> <span class="nav-text">java.lang.OutOfMemoryError: Java heap space</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#JVM%E5%8F%82%E6%95%B0-1"><span class="nav-number">1.1.3.1.</span> <span class="nav-text">JVM参数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BA%A7%E7%94%9F%E7%9A%84%E6%83%85%E5%BD%A2-1"><span class="nav-number">1.1.3.2.</span> <span class="nav-text">产生的情形</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%A4%BA%E4%BE%8B%E4%BB%A3%E7%A0%81-1"><span class="nav-number">1.1.3.3.</span> <span class="nav-text">示例代码</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%90%E8%A1%8C%E6%97%B6%E5%B8%B8%E9%87%8F%E6%B1%A0%E6%BA%A2%E5%87%BA"><span class="nav-number">1.2.</span> <span class="nav-text">运行时常量池溢出</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#java-lang-OutOfMemoryError-Metaspace"><span class="nav-number">1.2.1.</span> <span class="nav-text">java.lang.OutOfMemoryError: Metaspace</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#JVM%E5%8F%82%E6%95%B0-2"><span class="nav-number">1.2.1.1.</span> <span class="nav-text">JVM参数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BA%A7%E7%94%9F%E7%9A%84%E6%83%85%E5%BD%A2-2"><span class="nav-number">1.2.1.2.</span> <span class="nav-text">产生的情形</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%A4%BA%E4%BE%8B%E4%BB%A3%E7%A0%81-2"><span class="nav-number">1.2.1.3.</span> <span class="nav-text">示例代码</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%BF%90%E8%A1%8C%E6%8A%A5%E9%94%99-1"><span class="nav-number">1.2.1.4.</span> <span class="nav-text">运行报错</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#java-lang-OutOfMemoryError-PermGen-space"><span class="nav-number">1.2.2.</span> <span class="nav-text">java.lang.OutOfMemoryError: PermGen space</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#JVM%E5%8F%82%E6%95%B0-3"><span class="nav-number">1.2.2.1.</span> <span class="nav-text">JVM参数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%BF%90%E8%A1%8C%E6%8A%A5%E9%94%99-2"><span class="nav-number">1.2.2.2.</span> <span class="nav-text">运行报错</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%96%B9%E6%B3%95%E5%8C%BA%E6%BA%A2%E5%87%BA"><span class="nav-number">1.3.</span> <span class="nav-text">方法区溢出</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BA%A7%E7%94%9F%E7%9A%84%E6%83%85%E5%BD%A2-3"><span class="nav-number">1.3.1.</span> <span class="nav-text">产生的情形</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#java-lang-OutOfMemoryError-Metaspace-1"><span class="nav-number">1.3.2.</span> <span class="nav-text">java.lang.OutOfMemoryError: Metaspace</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%A4%BA%E4%BE%8B%E4%BB%A3%E7%A0%81-3"><span class="nav-number">1.3.2.1.</span> <span class="nav-text">示例代码</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%BF%90%E8%A1%8C%E6%8A%A5%E9%94%99-3"><span class="nav-number">1.3.2.2.</span> <span class="nav-text">运行报错</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#java-lang-OutOfMemoryError-PermGen-space-1"><span class="nav-number">1.3.3.</span> <span class="nav-text">java.lang.OutOfMemoryError: PermGen space</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#JVM%E5%8F%82%E6%95%B0-4"><span class="nav-number">1.3.3.1.</span> <span class="nav-text">JVM参数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%BF%90%E8%A1%8C%E6%8A%A5%E9%94%99-4"><span class="nav-number">1.3.3.2.</span> <span class="nav-text">运行报错</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%AC%E6%9C%BA%E7%9B%B4%E6%8E%A5%E5%86%85%E5%AD%98%E6%BA%A2%E5%87%BA"><span class="nav-number">1.4.</span> <span class="nav-text">本机直接内存溢出</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#java-lang-OutOfMemoryError-1"><span class="nav-number">1.4.1.</span> <span class="nav-text">java.lang.OutOfMemoryError</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#JVM%E5%8F%82%E6%95%B0-5"><span class="nav-number">1.4.1.1.</span> <span class="nav-text">JVM参数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%A4%BA%E4%BE%8B%E4%BB%A3%E7%A0%81-4"><span class="nav-number">1.4.1.2.</span> <span class="nav-text">示例代码</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%BF%90%E8%A1%8C%E6%8A%A5%E9%94%99-5"><span class="nav-number">1.4.1.3.</span> <span class="nav-text">运行报错</span></a></li></ol></li></ol></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="EiletXie"
+      src="/img/header.jpg">
+  <p class="site-author-name" itemprop="name">EiletXie</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">47</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">分类</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">32</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+  <div class="cc-license animated" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" rel="noopener" target="_blank"><img src="https://cdnjs.cloudflare.com/ajax/libs/creativecommons-vocabulary/2020.11.3/assets/license_badges/small/by_nc_sa.svg" alt="Creative Commons"></a>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://eiletxie.github.io/2019/09/16/JVM%E5%86%85%E5%AD%98%E6%BA%A2%E5%87%BADemo%E4%B8%8EJDK%E7%89%88%E6%9C%AC%E7%9A%84%E5%85%B3%E8%81%94/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/img/header.jpg">
+      <meta itemprop="name" content="EiletXie">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="EiletXie Blog">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="JVM内存溢出Demo与JDK版本的关联 | EiletXie Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          JVM内存溢出Demo与JDK版本的关联
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2019-09-16 13:12:22" itemprop="dateCreated datePublished" datetime="2019-09-16T13:12:22+08:00">2019-09-16</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2019-12-08 15:09:17" itemprop="dateModified" datetime="2019-12-08T15:09:17+08:00">2019-12-08</time>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>5.1k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>5 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="JVM内存溢出Demo与JDK版本的关联"><a href="#JVM内存溢出Demo与JDK版本的关联" class="headerlink" title="JVM内存溢出Demo与JDK版本的关联"></a>JVM内存溢出Demo与JDK版本的关联</h1><p>​         最近看经典的JVM书籍，周志明的《深入理解JAVA虚拟机》第三版，看到很多不错JVM内存溢出示例，我这里拿JDK1.6和JDK1.8版本进行了Demo的测试和总结。</p>
+<p>通过该文章，您可以了解相关知识</p>
+<ul>
+<li>不同类型的内存溢出应该是在哪种情形下，哪块区域的问题</li>
+<li>相关的JVM参数设置，调优</li>
+<li>相同的代码、不同JDK版本造成内存溢出的类型不同</li>
+</ul>
+<p>先列出内存溢出的几种类型：</p>
+<ul>
+<li>java.lang.OutOfMemoryError: Java heap space  堆内存溢出</li>
+<li>java.lang.OutOfMemoryError: PermGen space 永久代溢出</li>
+<li>java.lang.StackOverflowError 栈溢出</li>
+<li>java.lang.OutOfMemoryError: Metaspace  元空间溢出</li>
+<li>java.lang.OutOfMemoryError  直接内存溢出</li>
+</ul>
+<span id="more"></span>
+<br/>
+
+<h2 id="栈溢出"><a href="#栈溢出" class="headerlink" title="栈溢出"></a>栈溢出</h2><h3 id="java-lang-StackOverflowError"><a href="#java-lang-StackOverflowError" class="headerlink" title="java.lang.StackOverflowError"></a>java.lang.StackOverflowError</h3><p>栈溢出，发生在方法相互调用过多，或者递归无限调用时。</p>
+<h4 id="JVM参数"><a href="#JVM参数" class="headerlink" title="JVM参数"></a>JVM参数</h4><p><strong>-Xss   栈内存容量</strong></p>
+<h4 id="产生的情形"><a href="#产生的情形" class="headerlink" title="产生的情形"></a>产生的情形</h4><p>class中方法的调用是以栈帧的方式存储在 虚拟机栈中，当栈的深度不足，或者栈帧过大时就会导致虚拟机栈抛出异常。我们这就用递归，当递归无终止条件就会产生 java.lang.StackOverflowError<br><br/></p>
+<h4 id="示例代码"><a href="#示例代码" class="headerlink" title="示例代码"></a>示例代码</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">StackDemo3</span> &#123;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">private</span> <span class="type">int</span> <span class="variable">stackDepth</span> <span class="operator">=</span> <span class="number">1</span>;</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">public</span>  <span class="keyword">void</span> <span class="title function_">test1</span><span class="params">()</span>&#123;</span><br><span class="line">		stackDepth++;</span><br><span class="line">		test1();</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">		<span class="type">StackDemo3</span> <span class="variable">s</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">StackDemo3</span>();</span><br><span class="line">		<span class="keyword">try</span> &#123;</span><br><span class="line">			s.test1();</span><br><span class="line">		&#125; <span class="keyword">catch</span> (Throwable e) &#123;</span><br><span class="line">			System.out.println(<span class="string">&quot;stack depth: &quot;</span> + s.stackDepth);</span><br><span class="line">			<span class="keyword">throw</span> e;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>​    <img src="/2019/09/16/JVM%E5%86%85%E5%AD%98%E6%BA%A2%E5%87%BADemo%E4%B8%8EJDK%E7%89%88%E6%9C%AC%E7%9A%84%E5%85%B3%E8%81%94/stack2.jpg" class="" title="jvm栈参数图"></p>
+<h4 id="运行报错"><a href="#运行报错" class="headerlink" title="运行报错"></a>运行报错</h4>  <img src="/2019/09/16/JVM%E5%86%85%E5%AD%98%E6%BA%A2%E5%87%BADemo%E4%B8%8EJDK%E7%89%88%E6%9C%AC%E7%9A%84%E5%85%B3%E8%81%94/stack.jpg" class="" title="jvm栈异常图">
+
+<br/>
+
+<h3 id="java-lang-OutOfMemoryError"><a href="#java-lang-OutOfMemoryError" class="headerlink" title="java.lang.OutOfMemoryError"></a>java.lang.OutOfMemoryError</h3><p>栈溢出的另外一种异常</p>
+<p><strong>这种是发生在虚拟机扩展栈时无法申请到足够的内存空间</strong></p>
+<p>例如： 方法中有while(true)不break的情况时</p>
+<p>由于JDK1.8 无法限制JAVA线程中方法的内存扩展大小，所以运行到一半我怕我电脑死机停掉了。。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">StackDemo4</span> &#123;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">noStop</span><span class="params">()</span>&#123;</span><br><span class="line">		<span class="keyword">while</span>(<span class="literal">true</span>)&#123;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">stackRunNoStop</span><span class="params">()</span>&#123;</span><br><span class="line">		<span class="comment">// 加速扩展栈方法占用的内存</span></span><br><span class="line">		<span class="keyword">while</span>(<span class="literal">true</span>)&#123;</span><br><span class="line">			<span class="type">Thread</span> <span class="variable">thread</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Thread</span>(<span class="keyword">new</span> <span class="title class_">Runnable</span>() &#123;</span><br><span class="line">				<span class="meta">@Override</span></span><br><span class="line">				<span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">run</span><span class="params">()</span> &#123;</span><br><span class="line">					noStop();</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">		<span class="type">StackDemo4</span> <span class="variable">s</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">StackDemo4</span>();</span><br><span class="line">		s.stackRunNoStop();</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<br/>
+## 堆空间溢出
+
+<h3 id="java-lang-OutOfMemoryError-Java-heap-space"><a href="#java-lang-OutOfMemoryError-Java-heap-space" class="headerlink" title="java.lang.OutOfMemoryError: Java heap space"></a>java.lang.OutOfMemoryError: Java heap space</h3><p>堆空间是存放对象实例的地方 new Object()</p>
+<h4 id="JVM参数-1"><a href="#JVM参数-1" class="headerlink" title="JVM参数"></a>JVM参数</h4><ul>
+<li><p><strong>-Xmx  最大分配内存，默认为物理内存的 “1 &#x2F; 4”</strong></p>
+</li>
+<li><p><strong>-Xms  设置初始分配大小，默认为物理内存的 “1 &#x2F; 64”</strong></p>
+</li>
+<li><p><strong>-XX:+PrintGCDetails     输出详细的GC处理日志</strong></p>
+<br/></li>
+</ul>
+<h4 id="产生的情形-1"><a href="#产生的情形-1" class="headerlink" title="产生的情形"></a>产生的情形</h4><p>​      对象的实例存放在堆空间中，那么我们只需要不停的产生字符串对象即可。</p>
+<h4 id="示例代码-1"><a href="#示例代码-1" class="headerlink" title="示例代码"></a>示例代码</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">HeapDemo</span> &#123;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">		<span class="comment">// 设置JVM参数为几M大小</span></span><br><span class="line">		<span class="type">String</span> <span class="variable">str</span> <span class="operator">=</span> <span class="string">&quot;test HeapOutOfMemory&quot;</span>;</span><br><span class="line">		</span><br><span class="line">		<span class="comment">// 无限生产新的str对象</span></span><br><span class="line">		<span class="keyword">while</span>(<span class="literal">true</span>)&#123;</span><br><span class="line">			str += str + <span class="keyword">new</span> <span class="title class_">Random</span>().nextInt(<span class="number">66666666</span>) + <span class="keyword">new</span> <span class="title class_">Random</span>().nextInt(<span class="number">99999999</span>);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<br/>
+#### 运行报错
+
+  <img src="/2019/09/16/JVM%E5%86%85%E5%AD%98%E6%BA%A2%E5%87%BADemo%E4%B8%8EJDK%E7%89%88%E6%9C%AC%E7%9A%84%E5%85%B3%E8%81%94/heap.jpg" class="" title="堆空间异常图">
+
+ <br/>
+
+<h2 id="运行时常量池溢出"><a href="#运行时常量池溢出" class="headerlink" title="运行时常量池溢出"></a>运行时常量池溢出</h2><p>这块区域是内存溢出类型最多的，为什么呢？</p>
+<ul>
+<li>JDK1.6及之前的版本:  常量池在方法区，方法区属于永久代，会报出 OutOfMemoryError: PermGen space</li>
+<li>JDK1.7:  常量池是位于堆空间中，它会报 java.lang.OutOfMemoryError</li>
+<li>JDK1.8: 方法区和运行时常量池位于元空间中，它报的是元空间溢出</li>
+</ul>
+<p>由于我电脑上只安装了 JDK1.8和JDK1.6，这里只做这两种版本的示例。<br><br/></p>
+<h3 id="java-lang-OutOfMemoryError-Metaspace"><a href="#java-lang-OutOfMemoryError-Metaspace" class="headerlink" title="java.lang.OutOfMemoryError: Metaspace"></a>java.lang.OutOfMemoryError: Metaspace</h3><p><strong>元空间溢出</strong></p>
+<p>​         JDK1.8版本提出元空间这个概念，它和新生代、老年代组成JVM内存区域，方法区和运行时常量池在JDK1.8版本中放置在了元空间中，默认元空间使用的是本地内存。</p>
+<h4 id="JVM参数-2"><a href="#JVM参数-2" class="headerlink" title="JVM参数"></a>JVM参数</h4><ul>
+<li>-XX:MetaspaceSize 初始空间大小，达到该值就会触发垃圾收集进行类型卸载</li>
+<li>-XX:MaxMetaspaceSize，最大空间，默认是没有限制的</li>
+</ul>
+<p>设置元空间大小 -XX:MetaspaceSize&#x3D;5M  -XX:MaxMetaspaceSize&#x3D;10M</p>
+<h4 id="产生的情形-2"><a href="#产生的情形-2" class="headerlink" title="产生的情形"></a>产生的情形</h4><p>​         String.intern() 是一个 Native 方法，它的作用是：如果字符串常量池中包含该String对象的常量池中，并且返回该String对象的引用。 </p>
+<p>​        我们用一个list作为常量池的引用，防止被GC，然后无限插入新的字符串</p>
+<h4 id="示例代码-2"><a href="#示例代码-2" class="headerlink" title="示例代码"></a>示例代码</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">RuntimeConstantPoolOOM</span> &#123;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">		<span class="comment">// 用List保证常量池引用，避免被FULL GC回收常量池行为</span></span><br><span class="line">		List&lt;String&gt; list = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">		<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">		</span><br><span class="line">		<span class="keyword">while</span>(<span class="literal">true</span>)&#123;</span><br><span class="line">		    list.add(String.valueOf(i++).intern());</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="运行报错-1"><a href="#运行报错-1" class="headerlink" title="运行报错"></a>运行报错</h4>  <img src="/2019/09/16/JVM%E5%86%85%E5%AD%98%E6%BA%A2%E5%87%BADemo%E4%B8%8EJDK%E7%89%88%E6%9C%AC%E7%9A%84%E5%85%B3%E8%81%94/pool.jpg" class="" title="常量池异常图">
+
+<h3 id="java-lang-OutOfMemoryError-PermGen-space"><a href="#java-lang-OutOfMemoryError-PermGen-space" class="headerlink" title="java.lang.OutOfMemoryError: PermGen space"></a>java.lang.OutOfMemoryError: PermGen space</h3><h4 id="JVM参数-3"><a href="#JVM参数-3" class="headerlink" title="JVM参数"></a>JVM参数</h4><p>在JDK1.6及之前的版本中，由于常量池分配在永久代内，我们可以通过-XX:PermSize和-XX:MaxPermSize限制方法区大小，从而间接限制其中常量池的容量，你可以给个10M大小</p>
+<p>产生情形和示例代码是一致的，区别只是JDK版本不同，常量池所在的内存区域发生变化，从而导致不同内存溢出异常。</p>
+<h4 id="运行报错-2"><a href="#运行报错-2" class="headerlink" title="运行报错"></a>运行报错</h4> <img src="/2019/09/16/JVM%E5%86%85%E5%AD%98%E6%BA%A2%E5%87%BADemo%E4%B8%8EJDK%E7%89%88%E6%9C%AC%E7%9A%84%E5%85%B3%E8%81%94/pool2.jpg" class="" title="常量池异常1.6图">
+
+<h2 id="方法区溢出"><a href="#方法区溢出" class="headerlink" title="方法区溢出"></a>方法区溢出</h2><p>方法区抛出的异常与常量池一致，一个包含关系</p>
+<h4 id="产生的情形-3"><a href="#产生的情形-3" class="headerlink" title="产生的情形"></a>产生的情形</h4><p>由于方法区用于存放Class的相关信息：如类名、访问修饰符、常量池</p>
+<p>所以测试的话，思路就是 运行程序时产生大量的类填满的类去填满方法区，直到溢出。</p>
+<p>这里用CGLib直接操作字节码运行时产生大量的动态类。</p>
+<p>刚开始设置的是 方法区的大小，发现没什么效果。</p>
+<p>​     <strong>VM Args: -XX:PermSize&#x3D;10M -XX:MaxPermSize&#x3D;10M</strong></p>
+<p>​         由于JDK1.8时 已经去除了永久代，方法区在元空间中，而元空间未设置的话使用的是本地内存，所以我测试一直未报溢出。</p>
+<p>直到设置的JVM参数  元空间的大小才报元空间溢出的异常</p>
+<p>​      -XX:MetaspaceSize&#x3D;5M  -XX:MaxMetaspaceSize&#x3D;5M</p>
+<h3 id="java-lang-OutOfMemoryError-Metaspace-1"><a href="#java-lang-OutOfMemoryError-Metaspace-1" class="headerlink" title="java.lang.OutOfMemoryError: Metaspace"></a>java.lang.OutOfMemoryError: Metaspace</h3><h4 id="示例代码-3"><a href="#示例代码-3" class="headerlink" title="示例代码"></a>示例代码</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 借助CGLib方法区出现内存溢出异常 </span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> XC-Eilet</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> *         CGLIB是一个强大、高性能的字节码生成库，它用于在运行时扩展Java类和实现接口；本质上它是通过动态的生成一个子类去覆盖所要代理的类（</span></span><br><span class="line"><span class="comment"> *         非final修饰的类和方法）。Enhancer是一个非常重要的类，它允许为非接口类型创建一个JAVA代理，</span></span><br><span class="line"><span class="comment"> *         Enhancer动态的创建给定类的子类并且拦截代理类的所有的方法，和JDK动态代理不一样的是不管是接口还是类它都能正常工作。</span></span><br><span class="line"><span class="comment"> * </span></span><br><span class="line"><span class="comment"> *         net.sf.cglib.proxy.Callback接口：在cglib包中是一个很关键的接口，所有被net.sf.cglib.proxy</span></span><br><span class="line"><span class="comment"> *         .Enhancer类调用的回调（callback）接口都要继承这个接口。</span></span><br><span class="line"><span class="comment"> *         net.sf.cglib.proxy.MethodInterceptor接口:是通用的回调（callback）类型，</span></span><br><span class="line"><span class="comment"> *         他经常被AOP用来实现拦截（intercept）方法的调用；</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">JavaMethodAreaOOM</span> &#123;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">		<span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">			<span class="comment">/*</span></span><br><span class="line"><span class="comment">			 * Enhancer可能是CGLIB中最常用的一个类，和Java1.3动态代理中引入的Proxy类差不多(如果对Proxy不懂，可以参考这里)。</span></span><br><span class="line"><span class="comment">			 * 和Proxy不同的是，Enhancer既能够代理普通的class，也能够代理接口。</span></span><br><span class="line"><span class="comment">			 */</span></span><br><span class="line">			<span class="type">Enhancer</span> <span class="variable">enhancer</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Enhancer</span>();</span><br><span class="line">			enhancer.setSuperclass(OOMObject.class);</span><br><span class="line">			enhancer.setUseCache(<span class="literal">false</span>);</span><br><span class="line">			enhancer.setCallback(<span class="keyword">new</span> <span class="title class_">MethodInterceptor</span>() &#123;</span><br><span class="line">				</span><br><span class="line">				<span class="keyword">public</span> Object <span class="title function_">intercept</span><span class="params">(Object obj, Method method, Object[] args, MethodProxy proxy)</span> <span class="keyword">throws</span> Throwable &#123;</span><br><span class="line">					<span class="keyword">return</span> proxy.invokeSuper(obj, args);</span><br><span class="line">				&#125;</span><br><span class="line">				</span><br><span class="line">			&#125;);</span><br><span class="line">			enhancer.create();</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">OOMObject</span> &#123;</span><br><span class="line">		</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h4 id="运行报错-3"><a href="#运行报错-3" class="headerlink" title="运行报错"></a>运行报错</h4> <img src="/2019/09/16/JVM%E5%86%85%E5%AD%98%E6%BA%A2%E5%87%BADemo%E4%B8%8EJDK%E7%89%88%E6%9C%AC%E7%9A%84%E5%85%B3%E8%81%94/method.jpg" class="" title="方法区异常图">
+
+<h3 id="java-lang-OutOfMemoryError-PermGen-space-1"><a href="#java-lang-OutOfMemoryError-PermGen-space-1" class="headerlink" title="java.lang.OutOfMemoryError: PermGen space"></a>java.lang.OutOfMemoryError: PermGen space</h3><br/>
+
+<p>JDK1.6版本</p>
+<p>用JDK1.6 版本测试时，由于限制了方法区大小，就开始报永久代错误了。</p>
+<h4 id="JVM参数-4"><a href="#JVM参数-4" class="headerlink" title="JVM参数"></a>JVM参数</h4><p>设置方法区大小</p>
+<p>-XX:PermSize&#x3D;10M -XX:MaxPermSize&#x3D;10M</p>
+<p>代码与上面示例代码保持一致</p>
+<h4 id="运行报错-4"><a href="#运行报错-4" class="headerlink" title="运行报错"></a>运行报错</h4> <img src="/2019/09/16/JVM%E5%86%85%E5%AD%98%E6%BA%A2%E5%87%BADemo%E4%B8%8EJDK%E7%89%88%E6%9C%AC%E7%9A%84%E5%85%B3%E8%81%94/method2.jpg" class="" title="方法区异常图">
+
+<br/>
+
+<h2 id="本机直接内存溢出"><a href="#本机直接内存溢出" class="headerlink" title="本机直接内存溢出"></a>本机直接内存溢出</h2><h3 id="java-lang-OutOfMemoryError-1"><a href="#java-lang-OutOfMemoryError-1" class="headerlink" title="java.lang.OutOfMemoryError"></a>java.lang.OutOfMemoryError</h3><h4 id="JVM参数-5"><a href="#JVM参数-5" class="headerlink" title="JVM参数"></a>JVM参数</h4><p>DirectMemory 容量通过-XX:MaxDirectMemorySize 指定，如果不指定的话，默认等于Java堆的最大值（-Xmx）一样。</p>
+<p>这里用 反射获取Unsafe实例进行直接内存分配。</p>
+<h4 id="示例代码-4"><a href="#示例代码-4" class="headerlink" title="示例代码"></a>示例代码</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * VM Args: -Xmx20M -XX:MaxDirectMemorySize=10M</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@author</span> XC-Eilet</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">DirectMemoryOOM</span> &#123;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">int</span> <span class="variable">_1MB</span> <span class="operator">=</span> <span class="number">1024</span>*<span class="number">1024</span>;</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">      <span class="type">Field</span> <span class="variable">unsafeField</span> <span class="operator">=</span> Unsafe.class.getDeclaredFields()[<span class="number">0</span>];</span><br><span class="line">      unsafeField.setAccessible(<span class="literal">true</span>);</span><br><span class="line">      <span class="type">Unsafe</span> <span class="variable">unsafe</span> <span class="operator">=</span> (Unsafe) unsafeField.get(<span class="literal">null</span>);</span><br><span class="line">      <span class="keyword">while</span>(<span class="literal">true</span>)&#123;</span><br><span class="line">    	  unsafe.allocateMemory(_1MB);</span><br><span class="line">      &#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="运行报错-5"><a href="#运行报错-5" class="headerlink" title="运行报错"></a>运行报错</h4> <img src="/2019/09/16/JVM%E5%86%85%E5%AD%98%E6%BA%A2%E5%87%BADemo%E4%B8%8EJDK%E7%89%88%E6%9C%AC%E7%9A%84%E5%85%B3%E8%81%94/direct.jpg" class="" title="直接内存异常图">
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>本文作者： </strong>EiletXie
+  </li>
+  <li class="post-copyright-link">
+      <strong>本文链接：</strong>
+      <a href="https://eiletxie.github.io/2019/09/16/JVM%E5%86%85%E5%AD%98%E6%BA%A2%E5%87%BADemo%E4%B8%8EJDK%E7%89%88%E6%9C%AC%E7%9A%84%E5%85%B3%E8%81%94/" title="JVM内存溢出Demo与JDK版本的关联">https://eiletxie.github.io/2019/09/16/JVM内存溢出Demo与JDK版本的关联/</a>
+  </li>
+  <li class="post-copyright-license">
+      <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/JVM/" rel="tag"># JVM</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2019/08/26/ActiveMQ%E9%85%8D%E7%BD%AEjdbc%E6%8C%81%E4%B9%85%E5%8C%96%E5%87%BA%E7%8E%B0%E7%9A%84%E9%97%AE%E9%A2%98/" rel="prev" title="ActiveMQ配置jdbc持久化出现的问题">
+                  <i class="fa fa-angle-left"></i> ActiveMQ配置jdbc持久化出现的问题
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2019/10/07/MySQL%E4%B8%ADGAP%EF%BC%88%E9%97%B4%E9%9A%99%EF%BC%89%E9%94%81%E7%9A%84%E6%8E%A2%E7%B4%A2/" rel="next" title="MySQL中GAP Lock">
+                  MySQL中GAP Lock <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">EiletXie</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">225k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">3:25</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+
+  <a href="https://github.com/EiletXie" class="github-corner" title="在 GitHub 上关注我" aria-label="在 GitHub 上关注我" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

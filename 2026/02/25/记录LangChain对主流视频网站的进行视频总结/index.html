@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.1">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-minimal.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous" defer></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"eiletxie.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"a11y-dark","dark":"a11y-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="简要阐述：&#x20; 出于一些收费视频广告问题，以及对喜欢的某些博主的视频语速过快，没有字幕等情况。导致我想要将B站和YouTube两个网站的视频做一个流媒体视频的文本收集和视频总结的功能。 &#x20; 然后因为学过LangChain了，所以利用LangChain来爬取视频，然后转换音频，音频转换成文本。最后用大模型进行文本识别和语义修复，输出想要的格式文件。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="记录LangChain对主流视频网站的进行视频总结">
+<meta property="og:url" content="https://eiletxie.github.io/2026/02/25/%E8%AE%B0%E5%BD%95LangChain%E5%AF%B9%E4%B8%BB%E6%B5%81%E8%A7%86%E9%A2%91%E7%BD%91%E7%AB%99%E7%9A%84%E8%BF%9B%E8%A1%8C%E8%A7%86%E9%A2%91%E6%80%BB%E7%BB%93/index.html">
+<meta property="og:site_name" content="EiletXie Blog">
+<meta property="og:description" content="简要阐述：&#x20; 出于一些收费视频广告问题，以及对喜欢的某些博主的视频语速过快，没有字幕等情况。导致我想要将B站和YouTube两个网站的视频做一个流媒体视频的文本收集和视频总结的功能。 &#x20; 然后因为学过LangChain了，所以利用LangChain来爬取视频，然后转换音频，音频转换成文本。最后用大模型进行文本识别和语义修复，输出想要的格式文件。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-02-25T00:28:07.000Z">
+<meta property="article:modified_time" content="2026-02-25T00:36:29.656Z">
+<meta property="article:author" content="EiletXie">
+<meta property="article:tag" content="agent">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://eiletxie.github.io/2026/02/25/%E8%AE%B0%E5%BD%95LangChain%E5%AF%B9%E4%B8%BB%E6%B5%81%E8%A7%86%E9%A2%91%E7%BD%91%E7%AB%99%E7%9A%84%E8%BF%9B%E8%A1%8C%E8%A7%86%E9%A2%91%E6%80%BB%E7%BB%93/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://eiletxie.github.io/2026/02/25/%E8%AE%B0%E5%BD%95LangChain%E5%AF%B9%E4%B8%BB%E6%B5%81%E8%A7%86%E9%A2%91%E7%BD%91%E7%AB%99%E7%9A%84%E8%BF%9B%E8%A1%8C%E8%A7%86%E9%A2%91%E6%80%BB%E7%BB%93/","path":"2026/02/25/记录LangChain对主流视频网站的进行视频总结/","title":"记录LangChain对主流视频网站的进行视频总结"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>记录LangChain对主流视频网站的进行视频总结 | EiletXie Blog</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.5.0/search.js" integrity="sha256-xFC6PJ82SL9b3WkGjFavNiA9gm5z6UBxWPiu4CYjptg=" crossorigin="anonymous" defer></script>
+<script src="/js/third-party/search/local-search.js" defer></script>
+
+
+
+
+
+  <script src="/js/third-party/pace.js" defer></script>
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">EiletXie Blog</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">不忘初心 Keep Moving</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AE%80%E8%A6%81%E9%98%90%E8%BF%B0%EF%BC%9A"><span class="nav-number">1.</span> <span class="nav-text">简要阐述：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%89%88%E6%9C%AC%E8%AF%B4%E6%98%8E%EF%BC%9A"><span class="nav-number">2.</span> <span class="nav-text">版本说明：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%86%E9%A2%91%E6%80%BB%E7%BB%93%EF%BC%9A"><span class="nav-number">3.</span> <span class="nav-text">视频总结：</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8A%93%E5%8F%96B%E7%AB%99%E8%BF%9B%E8%A1%8C%E8%A7%86%E9%A2%91%E6%80%BB%E7%BB%93%EF%BC%9A"><span class="nav-number">3.1.</span> <span class="nav-text">抓取B站进行视频总结：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%B7%91%E5%AE%8C%E6%95%88%E6%9E%9C%E5%A6%82%E4%B8%8B%EF%BC%9A"><span class="nav-number">3.2.</span> <span class="nav-text">跑完效果如下：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Youtube%E8%A7%86%E9%A2%91%E4%B8%8B%E8%BD%BD"><span class="nav-number">4.</span> <span class="nav-text">Youtube视频下载</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9F%B3%E9%A2%91%E8%BE%93%E5%87%BA%E6%A0%87%E5%87%86%E6%A0%BC%E5%BC%8F%E5%8C%96%E8%AF%AD%E4%B9%89%E7%9A%84%E6%96%87%E6%9C%AC"><span class="nav-number">5.</span> <span class="nav-text">音频输出标准格式化语义的文本</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="EiletXie"
+      src="/img/header.jpg">
+  <p class="site-author-name" itemprop="name">EiletXie</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">47</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">分类</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">32</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+  <div class="cc-license animated" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" rel="noopener" target="_blank"><img src="https://cdnjs.cloudflare.com/ajax/libs/creativecommons-vocabulary/2020.11.3/assets/license_badges/small/by_nc_sa.svg" alt="Creative Commons"></a>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://eiletxie.github.io/2026/02/25/%E8%AE%B0%E5%BD%95LangChain%E5%AF%B9%E4%B8%BB%E6%B5%81%E8%A7%86%E9%A2%91%E7%BD%91%E7%AB%99%E7%9A%84%E8%BF%9B%E8%A1%8C%E8%A7%86%E9%A2%91%E6%80%BB%E7%BB%93/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/img/header.jpg">
+      <meta itemprop="name" content="EiletXie">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="EiletXie Blog">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="记录LangChain对主流视频网站的进行视频总结 | EiletXie Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          记录LangChain对主流视频网站的进行视频总结
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2026-02-25 08:28:07 / 修改时间：08:36:29" itemprop="dateCreated datePublished" datetime="2026-02-25T08:28:07+08:00">2026-02-25</time>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>14k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>12 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h2 id="简要阐述："><a href="#简要阐述：" class="headerlink" title="简要阐述："></a>简要阐述：</h2><p>&#x20; 出于一些收费视频广告问题，以及对喜欢的某些博主的视频语速过快，没有字幕等情况。导致我想要将B站和YouTube两个网站的视频做一个流媒体视频的文本收集和视频总结的功能。</p>
+<p>&#x20; 然后因为学过LangChain了，所以利用LangChain来爬取视频，然后转换音频，音频转换成文本。最后用大模型进行文本识别和语义修复，输出想要的格式文件。</p>
+<span id="more"></span>
+
+<h2 id="版本说明："><a href="#版本说明：" class="headerlink" title="版本说明："></a>版本说明：</h2><p>&#x20;   在实际操作的过程中,发现不同的插件版本的代码写法，以及对whisper的支持适配都不同。所以需要提前跟读者约定好当前成功的版本。</p>
+<p>&#x20;   出于学习大模型的目的，基本使用的都是最新版，可能与很多网上视频和帖子的版本不同，因为大模型更新迭代太快，老帖子基本还是用的LangChain的0.2以下的版本。</p>
+<p>&#x20;   所以如果读者熟悉老版本的话，建议直接让大模型将文中的代码转换成老版本，就是怕与第三方插件可能版本不适配，还是以实操为主。</p>
+<p>&#x20;   主要关注 langchain和python版本即可，其他的插件，pip基本会自动安装适配的插件版本，这里是如果不可以，用户再来关注可用的插件版本</p>
+<ul>
+<li>langchain 1.2.6</li>
+<li>python 3.11.14</li>
+<li>openai 2.15.0</li>
+<li>yt-dlp                    2026.1.29</li>
+<li>pytube                    15.0.0</li>
+</ul>
+<h2 id="视频总结："><a href="#视频总结：" class="headerlink" title="视频总结："></a>视频总结：</h2><p>1、whisper插件使用base模型进行音频转文本即可，使用large模型转换效果会更好，但是速度太慢，后面完全可以用大模型进行文本语义修复，速度会快很多。</p>
+<p>2、使用yt-dlp来下载视频，yt-dlp 的名字里有 “YouTube”，但它绝不仅仅支持 YouTube —— 它实际上是目前最强大、最通用的命令行视频下载工具之一，支持 1000+ 个网站，包括 Bilibili（B站）、Twitter、Instagram、TikTok、Vimeo、优酷、腾讯视频等。</p>
+<p>3、为了省钱，我是用本地的Ollama模型跑的，用openai的要收费，跑多了烧钱。。。。 其次本地8B的模型能跑大部分业务了。</p>
+<h3 id="抓取B站进行视频总结："><a href="#抓取B站进行视频总结：" class="headerlink" title="抓取B站进行视频总结："></a>抓取B站进行视频总结：</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> yt_dlp</span><br><span class="line"><span class="keyword">import</span> dotenv</span><br><span class="line">dotenv.load_dotenv()</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"><span class="keyword">import</span> re</span><br><span class="line"><span class="keyword">import</span> tempfile</span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">from</span> urllib.parse <span class="keyword">import</span> urlparse, parse_qs</span><br><span class="line"><span class="keyword">from</span> langchain_openai <span class="keyword">import</span> ChatOpenAI</span><br><span class="line"><span class="keyword">from</span> langchain_core.prompts <span class="keyword">import</span> ChatPromptTemplate</span><br><span class="line"><span class="keyword">from</span> langchain_core.output_parsers <span class="keyword">import</span> StrOutputParser</span><br><span class="line">os.environ[<span class="string">&#x27;OPENAI_API_KEY&#x27;</span>] = os.getenv(<span class="string">&quot;OPENAI_API_KEY1&quot;</span>)</span><br><span class="line">os.environ[<span class="string">&#x27;OPENAI_BASE_URL&#x27;</span>] = os.getenv(<span class="string">&quot;OPENAI_BASE_URL&quot;</span>)</span><br><span class="line"><span class="comment"># ======================</span></span><br><span class="line"><span class="comment"># 配置区（按需修改）</span></span><br><span class="line"><span class="comment"># ======================</span></span><br><span class="line">HEADERS = &#123;</span><br><span class="line">    <span class="string">&quot;User-Agent&quot;</span>: <span class="string">&quot;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36&quot;</span>,</span><br><span class="line">    <span class="string">&quot;Referer&quot;</span>: <span class="string">&quot;https://www.bilibili.com/&quot;</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">WHISPER_MODEL = <span class="string">&quot;base&quot;</span>  <span class="comment"># 可选: base, small, medium（越大越准，越慢）</span></span><br><span class="line">USE_YOU_GET = <span class="literal">True</span>      <span class="comment"># 设为 False 改用 yt-dlp（需额外安装）</span></span><br><span class="line">LLM_MODEL = <span class="string">&quot;gpt-4o&quot;</span>            <span class="comment"># 或 &quot;qwen-plus&quot;, &quot;claude-3-5-sonnet&quot;, &quot;gpt-3.5-turbo&quot;</span></span><br><span class="line">USE_LOCAL_LLM = <span class="literal">True</span>           <span class="comment"># 设为 True 可改用 Ollama（见下方注释）</span></span><br><span class="line"><span class="comment"># ======================</span></span><br><span class="line"><span class="comment"># 工具函数</span></span><br><span class="line"><span class="comment"># ======================</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">extract_bvid_from_url</span>(<span class="params">url: <span class="built_in">str</span></span>) -&gt; <span class="built_in">str</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;从 URL 提取 BV 号&quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">if</span> <span class="string">&quot;bilibili.com&quot;</span> <span class="keyword">not</span> <span class="keyword">in</span> url:</span><br><span class="line">        <span class="keyword">return</span> url</span><br><span class="line">    parsed = urlparse(url)</span><br><span class="line">    <span class="keyword">if</span> <span class="string">&quot;bvid=&quot;</span> <span class="keyword">in</span> parsed.query:</span><br><span class="line">        <span class="keyword">return</span> parse_qs(parsed.query)[<span class="string">&quot;bvid&quot;</span>][<span class="number">0</span>]</span><br><span class="line">    <span class="keyword">match</span> = re.search(<span class="string">r&quot;BV\w+&quot;</span>, parsed.path)</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">match</span>:</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">match</span>.group(<span class="number">0</span>)</span><br><span class="line">    <span class="keyword">raise</span> ValueError(<span class="string">&quot;无法提取 BV 号&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">try_get_subtitle_via_api</span>(<span class="params">bvid: <span class="built_in">str</span></span>) -&gt; <span class="built_in">str</span> | <span class="literal">None</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;尝试通过 API 获取有效中文字幕&quot;&quot;&quot;</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;🔍 尝试通过 B站 API 获取字幕...&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 获取 cid</span></span><br><span class="line">    view_resp = requests.get(</span><br><span class="line">        <span class="string">f&quot;https://api.bilibili.com/x/web-interface/view?bvid=<span class="subst">&#123;bvid&#125;</span>&quot;</span>,</span><br><span class="line">        headers=HEADERS,</span><br><span class="line">        timeout=<span class="number">10</span></span><br><span class="line">    )</span><br><span class="line">    view_data = view_resp.json()</span><br><span class="line">    <span class="keyword">if</span> view_data[<span class="string">&quot;code&quot;</span>] != <span class="number">0</span>:</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">None</span></span><br><span class="line">    cid = view_data[<span class="string">&quot;data&quot;</span>][<span class="string">&quot;pages&quot;</span>][<span class="number">0</span>][<span class="string">&quot;cid&quot;</span>]</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 获取字幕列表</span></span><br><span class="line">    sub_resp = requests.get(</span><br><span class="line">        <span class="string">f&quot;https://api.bilibili.com/x/player/v2?bvid=<span class="subst">&#123;bvid&#125;</span>&amp;cid=<span class="subst">&#123;cid&#125;</span>&quot;</span>,</span><br><span class="line">        headers=HEADERS,</span><br><span class="line">        timeout=<span class="number">10</span></span><br><span class="line">    )</span><br><span class="line">    sub_data = sub_resp.json()</span><br><span class="line">    <span class="keyword">if</span> sub_data[<span class="string">&quot;code&quot;</span>] != <span class="number">0</span>:</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">None</span></span><br><span class="line"></span><br><span class="line">    subtitles = sub_data[<span class="string">&quot;data&quot;</span>][<span class="string">&quot;subtitle&quot;</span>][<span class="string">&quot;subtitles&quot;</span>]</span><br><span class="line">    candidates = []</span><br><span class="line">    <span class="keyword">for</span> sub <span class="keyword">in</span> subtitles:</span><br><span class="line">        lang = sub[<span class="string">&quot;lan&quot;</span>]</span><br><span class="line">        <span class="keyword">if</span> lang == <span class="string">&quot;zh-CN&quot;</span>:   <span class="comment"># 人工字幕，优先</span></span><br><span class="line">            candidates.insert(<span class="number">0</span>, sub)</span><br><span class="line">        <span class="keyword">elif</span> lang == <span class="string">&quot;ai-Zh&quot;</span>: <span class="comment"># AI 字幕，次之</span></span><br><span class="line">            candidates.append(sub)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 尝试下载每个候选字幕</span></span><br><span class="line">    <span class="keyword">for</span> sub <span class="keyword">in</span> candidates:</span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            url = <span class="string">&quot;https:&quot;</span> + sub[<span class="string">&quot;subtitle_url&quot;</span>]</span><br><span class="line">            content_resp = requests.get(url, headers=HEADERS, timeout=<span class="number">10</span>)</span><br><span class="line">            body = content_resp.json()[<span class="string">&quot;body&quot;</span>]</span><br><span class="line">            text = <span class="string">&quot; &quot;</span>.join(item[<span class="string">&quot;content&quot;</span>] <span class="keyword">for</span> item <span class="keyword">in</span> body).strip()</span><br><span class="line"></span><br><span class="line">            <span class="comment"># 过滤无效内容</span></span><br><span class="line">            <span class="keyword">if</span> <span class="built_in">len</span>(text) &lt; <span class="number">50</span>:</span><br><span class="line">                <span class="keyword">continue</span></span><br><span class="line">            <span class="keyword">if</span> <span class="built_in">any</span>(kw <span class="keyword">in</span> text <span class="keyword">for</span> kw <span class="keyword">in</span> [<span class="string">&quot;付费&quot;</span>, <span class="string">&quot;购买&quot;</span>, <span class="string">&quot;试看&quot;</span>, <span class="string">&quot;完整视频&quot;</span>, <span class="string">&quot;解锁&quot;</span>]):</span><br><span class="line">                <span class="keyword">continue</span></span><br><span class="line"></span><br><span class="line">            <span class="built_in">print</span>(<span class="string">&quot;✅ API 字幕获取成功！&quot;</span>)</span><br><span class="line">            <span class="keyword">return</span> text</span><br><span class="line">        <span class="keyword">except</span> Exception <span class="keyword">as</span> e:</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">f&quot;⚠️ 字幕下载失败: <span class="subst">&#123;e&#125;</span>&quot;</span>)</span><br><span class="line">            <span class="keyword">continue</span></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">None</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">download_audio_by_yt_dlp_api</span>(<span class="params">bvid: <span class="built_in">str</span>, output_dir: <span class="built_in">str</span></span>) -&gt; <span class="built_in">str</span>:</span><br><span class="line">    url = <span class="string">f&quot;https://www.bilibili.com/video/<span class="subst">&#123;bvid&#125;</span>&quot;</span></span><br><span class="line">    output_template = os.path.join(output_dir, <span class="string">f&quot;<span class="subst">&#123;bvid&#125;</span>.%(ext)s&quot;</span>)</span><br><span class="line"></span><br><span class="line">    ydl_opts = &#123;</span><br><span class="line">        <span class="string">&#x27;format&#x27;</span>: <span class="string">&#x27;bestaudio[ext=m4a]/bestaudio&#x27;</span>,  <span class="comment"># 优先 m4a</span></span><br><span class="line">        <span class="string">&#x27;postprocessors&#x27;</span>: [&#123;</span><br><span class="line">            <span class="string">&#x27;key&#x27;</span>: <span class="string">&#x27;FFmpegExtractAudio&#x27;</span>,</span><br><span class="line">            <span class="string">&#x27;preferredcodec&#x27;</span>: <span class="string">&#x27;m4a&#x27;</span>,</span><br><span class="line">            <span class="string">&#x27;preferredquality&#x27;</span>: <span class="string">&#x27;192&#x27;</span>,</span><br><span class="line">        &#125;],</span><br><span class="line">        <span class="string">&#x27;outtmpl&#x27;</span>: output_template,</span><br><span class="line">        <span class="string">&#x27;quiet&#x27;</span>: <span class="literal">False</span>,          <span class="comment"># 显示进度（可设为 True 静默）</span></span><br><span class="line">        <span class="string">&#x27;no_warnings&#x27;</span>: <span class="literal">True</span>,</span><br><span class="line">        <span class="string">&#x27;noprogress&#x27;</span>: <span class="literal">False</span>,     <span class="comment"># 显示进度条</span></span><br><span class="line">        <span class="string">&#x27;socket_timeout&#x27;</span>: <span class="number">20</span>,</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f&quot;📥 正在下载音频: <span class="subst">&#123;url&#125;</span>&quot;</span>)</span><br><span class="line">    <span class="keyword">with</span> yt_dlp.YoutubeDL(ydl_opts) <span class="keyword">as</span> ydl:</span><br><span class="line">        ydl.download([url])</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 查找生成的 .m4a 文件</span></span><br><span class="line">    <span class="keyword">for</span> filename <span class="keyword">in</span> os.listdir(output_dir):</span><br><span class="line">        <span class="keyword">if</span> filename.startswith(bvid) <span class="keyword">and</span> filename.endswith(<span class="string">&#x27;.m4a&#x27;</span>):</span><br><span class="line">            <span class="keyword">return</span> os.path.join(output_dir, filename)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">raise</span> FileNotFoundError(<span class="string">&quot;未找到下载的 .m4a 文件&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">transcribe_audio_with_whisper</span>(<span class="params">audio_path: <span class="built_in">str</span></span>) -&gt; <span class="built_in">str</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;使用 Whisper 转写音频&quot;&quot;&quot;</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;🎙️ 使用 Whisper 转写音频（首次加载模型较慢）...&quot;</span>)</span><br><span class="line">    <span class="keyword">import</span> whisper</span><br><span class="line">    model = whisper.load_model(WHISPER_MODEL)</span><br><span class="line">    result = model.transcribe(audio_path, fp16=<span class="literal">False</span>, language=<span class="string">&quot;zh&quot;</span>)</span><br><span class="line">    <span class="keyword">return</span> result[<span class="string">&quot;text&quot;</span>]</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">get_video_text</span>(<span class="params">bvid: <span class="built_in">str</span></span>) -&gt; <span class="built_in">str</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;主逻辑：先 API，再音频转写&quot;&quot;&quot;</span></span><br><span class="line">    <span class="comment"># Step 1: 尝试 API</span></span><br><span class="line">    text = try_get_subtitle_via_api(bvid)</span><br><span class="line">    <span class="keyword">if</span> text:</span><br><span class="line">        <span class="keyword">return</span> text</span><br><span class="line"></span><br><span class="line">    <span class="comment"># Step 2: fallback 到音频转写</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;⚠️ API 未获取到有效字幕，正在下载音频转写...&quot;</span>)</span><br><span class="line">    <span class="keyword">with</span> tempfile.TemporaryDirectory() <span class="keyword">as</span> tmpdir:</span><br><span class="line">        audio_path = download_audio_by_yt_dlp_api(bvid, tmpdir)</span><br><span class="line">        text = transcribe_audio_with_whisper(audio_path)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">len</span>(text) &lt; <span class="number">50</span>:</span><br><span class="line">        <span class="keyword">raise</span> Exception(<span class="string">&quot;转写结果过短，可能失败&quot;</span>)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;✅ 音频转写成功！&quot;</span>)</span><br><span class="line">    <span class="keyword">return</span> text</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">summarize_text</span>(<span class="params">text: <span class="built_in">str</span>, model_name: <span class="built_in">str</span> = <span class="string">&quot;gpt-3.5-turbo&quot;</span></span>) -&gt; <span class="built_in">str</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;用 LangChain 总结文本&quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">if</span> USE_LOCAL_LLM:</span><br><span class="line">        <span class="comment"># 示例：使用 Ollama（需提前运行 ollama run qwen:7b）</span></span><br><span class="line">        <span class="keyword">from</span> langchain_community.chat_models <span class="keyword">import</span> ChatOllama</span><br><span class="line">        llm = ChatOllama(model=<span class="string">&quot;deepseek-r1:8b&quot;</span>, temperature=<span class="number">0.3</span>)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="comment"># 默认使用 OpenAI（需设置 OPENAI_API_KEY）</span></span><br><span class="line">        llm = ChatOpenAI(model=LLM_MODEL, temperature=<span class="number">0.3</span>)</span><br><span class="line">    prompt = ChatPromptTemplate.from_template(</span><br><span class="line">        <span class="string">&quot;请修正以下语音转写文本中的错别字，保持原意不变，只输出修正后的文本,并且用中文总结以下视频内容（500字以内）：\n&#123;text&#125;&quot;</span></span><br><span class="line">    )</span><br><span class="line">    chain = prompt | llm | StrOutputParser()</span><br><span class="line">    <span class="keyword">return</span> chain.invoke(&#123;<span class="string">&quot;text&quot;</span>: text&#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment"># ======================</span></span><br><span class="line"><span class="comment"># 主函数</span></span><br><span class="line"><span class="comment"># ======================</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">analyze_bilibili_video</span>(<span class="params">url: <span class="built_in">str</span></span>) -&gt; <span class="built_in">tuple</span>[<span class="built_in">str</span>, <span class="built_in">str</span>]:</span><br><span class="line">    bvid = extract_bvid_from_url(url)</span><br><span class="line">    text = get_video_text(bvid)</span><br><span class="line">    summary = summarize_text(text)</span><br><span class="line">    <span class="keyword">return</span> text, summary</span><br><span class="line"></span><br><span class="line"><span class="comment"># ======================</span></span><br><span class="line"><span class="comment"># 使用示例</span></span><br><span class="line"><span class="comment"># ======================</span></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">    <span class="comment"># 替换为你想分析的 B站 视频</span></span><br><span class="line">    URL = <span class="string">&quot;https://www.bilibili.com/video/BV16fcczRETs&quot;</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        text, summary = analyze_bilibili_video(URL)</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;\n&quot;</span> + <span class="string">&quot;=&quot;</span>*<span class="number">60</span>)</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;🎯 视频总结：&quot;</span>)</span><br><span class="line">        <span class="built_in">print</span>(summary)</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;=&quot;</span>*<span class="number">60</span>)</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&quot;\nℹ️  原文长度: <span class="subst">&#123;<span class="built_in">len</span>(text)&#125;</span> 字&quot;</span>)</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&quot;📄 预览: <span class="subst">&#123;text&#125;</span>...&quot;</span>)</span><br><span class="line">    <span class="keyword">except</span> Exception <span class="keyword">as</span> e:</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&quot;❌ 处理失败: <span class="subst">&#123;e&#125;</span>&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<h3 id="跑完效果如下："><a href="#跑完效果如下：" class="headerlink" title="跑完效果如下："></a>跑完效果如下：</h3><p>🔍 尝试通过 B站 API 获取字幕…<br>⚠️ API 未获取到有效字幕，正在下载音频转写…<br>📥 正在下载音频: <a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV16fcczRETs">https://www.bilibili.com/video/BV16fcczRETs</a><br>[BiliBili] Extracting URL: <a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV16fcczRETs">https://www.bilibili.com/video/BV16fcczRETs</a><br>[BiliBili] 16fcczRETs: Downloading webpage<br>[BiliBili] BV16fcczRETs: Extracting videos in anthology<br>[BiliBili] BV16fcczRETs: Downloading wbi sign<br>[BiliBili] BV16fcczRETs: Downloading video formats for cid 35915826698<br>[BiliBili] Format(s) 1080P 高码率 are missing; you have to become a premium member to download them. Use –cookies-from-browser or –cookies for the authentication. See  <a target="_blank" rel="noopener" href="https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp">https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp</a>  for how to manually pass cookies<br>[BiliBili] 116035336281401: Extracting chapters<br>[info] BV16fcczRETs: Downloading 1 format(s): 30280<br>[download] Destination: C:\Users\EiletXie\AppData\Local\Temp\tmp7c2lvfm5\BV16fcczRETs.m4a<br>[download] 100% of    1.99MiB in 00:00:00 at 5.45MiB&#x2F;s<br>[ExtractAudio] Not converting audio C:\Users\EiletXie\AppData\Local\Temp\tmp7c2lvfm5\BV16fcczRETs.m4a; file is already in target format m4a<br>🎙️ 使用 Whisper 转写音频（首次加载模型较慢）…<br>✅ 音频转写成功！</p>
+<p>=&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;<br>🎯 视频总结：</p>
+<p><strong>修正后的文本：</strong></p>
+<p>你能把你想象器地带到所有的物体、所有的人物、所有的空间、所有的场景中，而不仅仅局限于现在是不是复杂？是不是多元素的问题？多元素、复杂、这些关系、这些联系，它的背后是视觉逻辑。那视觉逻辑一定要服务于我们自己的能量场域，让他们进入我自己的场域，然后给我服务，而不一定我要走出我的这个场域去找他们，还去故意去刻意地去找他们。我的画面可以复杂，我的元素可以越来越多，都没有关系。它实施中是在我自己的场域本身之内去酝酿，而不是我去出去住，我出去啦，我自己家不管了，我去别人家去，这个多吗？也不少，但是它达成了相对统一。因为你就记住，多元素它一定是统一的。这个统一从心里上来讲，就是在你那里去统一。然后从视觉上、物理层面来讲，它总有一种的相似性，比如说这个状态的形态相似性，色调的相似性，色彩的相似，对，它能成一片的感觉。人物，然后我觉得你对状态本身的理解也特别好，有点自己的理解。对状态的理解，你看这个人物，它就是这个状态，板缓的扭头，对吧？稍微的扬起，风刮过来看相远处，好像有心事，画面有静谧，然后同时人物后面又是这种燃烧疯乱的这些树，它就有一个口在那里。人就在那里，你的这种能量是什么呀？它是很硬朗的能量，它不需要那么直接。为什么呀？能达到这种是因为你内心的丰富度到底还是感觉，就是我能感觉到那一片叶子，那一片叶子，一块石头它的情绪，对吧？我可能跟它建立某种微妙的联系，那一片云，那一颗树，对吧，那一个人物的微小的微妙的一种状态，我是能感觉到的。顺便还是感觉，只有我们的感觉更敏锐、更丰富、更细腻的时候，照片才能呈现那个细节，那个细节才会足够多度，这才是最关键的能量所在。</p>
+<p><strong>中文总结（500字以内）：</strong></p>
+<p>这段视频探讨了视觉创作中多元素与统一性的关系，强调视觉逻辑应服务于创作者自身的能量场域，引导所有元素（物体、人物、空间、场景）统一于“我”的内部世界，而非四处搜寻素材。核心观点是，多元素的复杂性并非问题，关键在于其内在统一性。这种统一源于创作者内心的丰富感知和细腻体验，表现为形态、色调、色彩等方面的相似性，形成和谐统一的画面。创作者需深入观察，捕捉万物微妙的情绪和状态，提升感知敏锐度，才能在作品中呈现丰富的细节，实现能量的统一与表达。视频鼓励创作者构建自己的视觉场域，让元素自然融合，而非强行搜集，最终达到视觉与内心的统一。</p>
+<p>ℹ️  原文长度: 615 字</p>
+<h2 id="Youtube视频下载"><a href="#Youtube视频下载" class="headerlink" title="Youtube视频下载"></a>Youtube视频下载</h2><p>&#x20; youtube视频下载可以完全复用上面这段代码，只是要注意url的更换，以及提取bv号时注意将bvid改成v即可。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">url = <span class="string">f&quot;https://www.youtube.com/watch?v=<span class="subst">&#123;bvid&#125;</span>&quot;</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">extract_bvid_from_url</span>(<span class="params">url: <span class="built_in">str</span></span>) -&gt; <span class="built_in">str</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;从 URL 提取 BV 号&quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">if</span> <span class="string">&quot;youtube.com&quot;</span> <span class="keyword">not</span> <span class="keyword">in</span> url:</span><br><span class="line">        <span class="keyword">return</span> url</span><br><span class="line">    parsed = urlparse(url)</span><br><span class="line">    <span class="keyword">if</span> <span class="string">&quot;v=&quot;</span> <span class="keyword">in</span> parsed.query:</span><br><span class="line">        <span class="keyword">return</span> parse_qs(parsed.query)[<span class="string">&quot;v&quot;</span>][<span class="number">0</span>]</span><br><span class="line">    <span class="keyword">match</span> = re.search(<span class="string">r&quot;BV\w+&quot;</span>, parsed.path)</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">match</span>:</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">match</span>.group(<span class="number">0</span>)</span><br><span class="line">    <span class="keyword">raise</span> ValueError(<span class="string">&quot;无法提取 BV 号&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<h2 id="音频输出标准格式化语义的文本"><a href="#音频输出标准格式化语义的文本" class="headerlink" title="音频输出标准格式化语义的文本"></a>音频输出标准格式化语义的文本</h2><p>如果你有直接音频，可以直接进行翻译，注意prompt的提示词即可</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> langchain_community.chat_models <span class="keyword">import</span> ChatOllama</span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"><span class="keyword">import</span> dotenv</span><br><span class="line"><span class="keyword">from</span> pathlib <span class="keyword">import</span> Path</span><br><span class="line"><span class="keyword">from</span> langchain_core.prompts <span class="keyword">import</span> ChatPromptTemplate</span><br><span class="line"><span class="keyword">from</span> langchain_core.output_parsers <span class="keyword">import</span> StrOutputParser</span><br><span class="line"><span class="keyword">from</span> langchain_openai <span class="keyword">import</span> ChatOpenAI  <span class="comment"># 也支持 Ollama、Claude 等</span></span><br><span class="line"></span><br><span class="line">dotenv.load_dotenv()</span><br><span class="line"></span><br><span class="line"><span class="comment"># 使用在线模型</span></span><br><span class="line"><span class="comment"># os.environ[&#x27;OPENAI_API_KEY&#x27;] = os.getenv(&quot;OPENAI_API_KEY1&quot;)</span></span><br><span class="line"><span class="comment"># os.environ[&#x27;OPENAI_BASE_URL&#x27;] = os.getenv(&quot;OPENAI_BASE_URL&quot;)</span></span><br><span class="line"><span class="comment"># chat_model = ChatOpenAI(</span></span><br><span class="line"><span class="comment">#     model=&quot;gpt-4o-mini&quot;</span></span><br><span class="line"><span class="comment"># )</span></span><br><span class="line"></span><br><span class="line"> <span class="comment"># 使用 Ollama 本地模型（默认连接 http://localhost:11434）</span></span><br><span class="line">llm = ChatOllama(</span><br><span class="line">    model=<span class="string">&quot;deepseek-r1:8b&quot;</span>,      <span class="comment"># ← 必须和你 pull 的模型名一致</span></span><br><span class="line">    temperature=<span class="number">0.3</span>,</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment"># ======================</span></span><br><span class="line"><span class="comment"># 配置区（按需修改）</span></span><br><span class="line"><span class="comment"># ======================</span></span><br><span class="line">WHISPER_MODEL = <span class="string">&quot;base&quot;</span>        <span class="comment"># base, small, medium, large-v3（越大越准）</span></span><br><span class="line">LLM_MODEL = <span class="string">&quot;gpt-4o&quot;</span>            <span class="comment"># 或 &quot;qwen-plus&quot;, &quot;claude-3-5-sonnet&quot;, &quot;gpt-3.5-turbo&quot;</span></span><br><span class="line">USE_LOCAL_LLM = <span class="literal">False</span>           <span class="comment"># 设为 True 可改用 Ollama（见下方注释）</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># ======================</span></span><br><span class="line"><span class="comment"># 步骤 1：语音转文字（Whisper）</span></span><br><span class="line"><span class="comment"># ======================</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">transcribe_audio</span>(<span class="params">audio_path: <span class="built_in">str</span></span>) -&gt; <span class="built_in">str</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;使用 Whisper 将音频转为原始文本&quot;&quot;&quot;</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;🎙️ 正在使用 Whisper 转写音频...&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 懒加载 whisper（避免未安装时报错）</span></span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        <span class="keyword">import</span> whisper</span><br><span class="line">    <span class="keyword">except</span> ImportError:</span><br><span class="line">        <span class="keyword">raise</span> ImportError(<span class="string">&quot;请先安装 whisper: pip install openai-whisper&quot;</span>)</span><br><span class="line"></span><br><span class="line">    model = whisper.load_model(WHISPER_MODEL)</span><br><span class="line">    result = model.transcribe(</span><br><span class="line">        audio_path,</span><br><span class="line">        language=<span class="string">&quot;zh&quot;</span>,      <span class="comment"># 锁定中文，大幅提升准确率</span></span><br><span class="line">        fp16=<span class="literal">False</span>,         <span class="comment"># CPU 用户设为 False</span></span><br><span class="line">        verbose=<span class="literal">False</span>       <span class="comment"># 关闭进度条</span></span><br><span class="line">    )</span><br><span class="line">    <span class="keyword">return</span> result[<span class="string">&quot;text&quot;</span>]</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. 用大模型一次性：纠错 + 加标点 + 分段</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">polish_transcript</span>(<span class="params">raw_text: <span class="built_in">str</span></span>) -&gt; <span class="built_in">str</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;用大模型对原始转写文本进行专业编辑&quot;&quot;&quot;</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;✨ 正在用大模型优化文本（纠错 + 分段 + 加标点）...&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> USE_LOCAL_LLM:</span><br><span class="line">        <span class="comment"># 示例：使用 Ollama（需提前运行 ollama run qwen:7b）</span></span><br><span class="line">        <span class="keyword">from</span> langchain_community.chat_models <span class="keyword">import</span> ChatOllama</span><br><span class="line">        llm = ChatOllama(model=<span class="string">&quot;qwen:7b&quot;</span>, temperature=<span class="number">0.3</span>)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="comment"># 默认使用 OpenAI（需设置 OPENAI_API_KEY）</span></span><br><span class="line">        llm = ChatOpenAI(model=LLM_MODEL, temperature=<span class="number">0.3</span>)</span><br><span class="line"></span><br><span class="line">    prompt = ChatPromptTemplate.from_template(</span><br><span class="line">        <span class="string">&quot;&quot;&quot;你是一位专业的视频字幕编辑，请对以下语音转写文本进行以下处理：</span></span><br><span class="line"><span class="string">        1. 修正同音错别字（如“视平”→“视频”，“魔性”→“模型”）</span></span><br><span class="line"><span class="string">        2. 添加合适的中文标点符号（，。？！等）</span></span><br><span class="line"><span class="string">        3. 按语义逻辑分成自然段落，每段聚焦一个子主题</span></span><br><span class="line"><span class="string">        4. 段落之间用两个换行符（\\n\\n）分隔</span></span><br><span class="line"><span class="string">        5. 保持原文所有信息，不要删减或添加内容</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">        待处理文本：</span></span><br><span class="line"><span class="string">        &#123;text&#125;&quot;&quot;&quot;</span></span><br><span class="line">            )</span><br><span class="line"></span><br><span class="line">    chain = prompt | llm | StrOutputParser()</span><br><span class="line">    <span class="keyword">return</span> chain.invoke(&#123;<span class="string">&quot;text&quot;</span>: raw_text&#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment"># ======================</span></span><br><span class="line"><span class="comment"># 主函数：一键解析音频</span></span><br><span class="line"><span class="comment"># ======================</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">parse_audio_to_text</span>(<span class="params">audio_path: <span class="built_in">str</span>, output_path: <span class="built_in">str</span> = <span class="literal">None</span></span>) -&gt; <span class="built_in">str</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    解析音频文件，返回优化后的文本</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    Args:</span></span><br><span class="line"><span class="string">        audio_path (str): 音频文件路径（支持 .mp3, .m4a, .wav 等）</span></span><br><span class="line"><span class="string">        output_path (str, optional): 保存结果的 txt 路径</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    Returns:</span></span><br><span class="line"><span class="string">        str: 优化后的分段文本</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    audio_path = Path(audio_path)</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> audio_path.exists():</span><br><span class="line">        <span class="keyword">raise</span> FileNotFoundError(<span class="string">f&quot;音频文件不存在: <span class="subst">&#123;audio_path&#125;</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># Step 1: Whisper 转写</span></span><br><span class="line">    raw_text = transcribe_audio(<span class="built_in">str</span>(audio_path))</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f&quot;📝 原始转写完成（<span class="subst">&#123;<span class="built_in">len</span>(raw_text)&#125;</span> 字）&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># Step 2: 大模型优化</span></span><br><span class="line">    polished_text = polish_transcript(raw_text)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># Step 3: 保存（可选）</span></span><br><span class="line">    <span class="keyword">if</span> output_path:</span><br><span class="line">        Path(output_path).write_text(polished_text, encoding=<span class="string">&quot;utf-8&quot;</span>)</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&quot;💾 结果已保存至: <span class="subst">&#123;output_path&#125;</span>&quot;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> polished_text</span><br><span class="line"></span><br><span class="line"><span class="comment"># 直接解析某个文本进行分段</span></span><br><span class="line"><span class="comment"># with open(&quot;睡前消息.txt&quot;, &quot;r&quot;, encoding=&quot;utf-8&quot;) as f:</span></span><br><span class="line"><span class="comment">#     text = f.read()</span></span><br><span class="line"><span class="comment"># polished_text = polish_transcript(text)</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># ======================</span></span><br><span class="line"><span class="comment"># 使用示例</span></span><br><span class="line"><span class="comment"># ======================</span></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">    <span class="comment"># 替换为你的音频文件路径</span></span><br><span class="line">    AUDIO_FILE = <span class="string">&quot;temp_audio.mp3&quot;</span></span><br><span class="line">    OUTPUT_FILE = <span class="string">&quot;transcript.txt&quot;</span></span><br><span class="line">p</span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        text = parse_audio_to_text(AUDIO_FILE, OUTPUT_FILE)</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;\n&quot;</span> + <span class="string">&quot;=&quot;</span>*<span class="number">60</span>)</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;🎯 解析结果预览：&quot;</span>)</span><br><span class="line">        <span class="built_in">print</span>(text[:<span class="number">500</span>] + <span class="string">&quot;...&quot;</span> <span class="keyword">if</span> <span class="built_in">len</span>(text) &gt; <span class="number">500</span> <span class="keyword">else</span> text)</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;=&quot;</span>*<span class="number">60</span>)</span><br><span class="line">    <span class="keyword">except</span> Exception <span class="keyword">as</span> e:</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">f&quot;❌ 处理失败: <span class="subst">&#123;e&#125;</span>&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>本文作者： </strong>EiletXie
+  </li>
+  <li class="post-copyright-link">
+      <strong>本文链接：</strong>
+      <a href="https://eiletxie.github.io/2026/02/25/%E8%AE%B0%E5%BD%95LangChain%E5%AF%B9%E4%B8%BB%E6%B5%81%E8%A7%86%E9%A2%91%E7%BD%91%E7%AB%99%E7%9A%84%E8%BF%9B%E8%A1%8C%E8%A7%86%E9%A2%91%E6%80%BB%E7%BB%93/" title="记录LangChain对主流视频网站的进行视频总结">https://eiletxie.github.io/2026/02/25/记录LangChain对主流视频网站的进行视频总结/</a>
+  </li>
+  <li class="post-copyright-license">
+      <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/agent/" rel="tag"># agent</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2022/07/17/Spring-%E9%BB%98%E8%AE%A4%E6%A0%87%E7%AD%BE%E8%A7%A3%E6%9E%90/" rel="prev" title="Spring-默认标签解析">
+                  <i class="fa fa-angle-left"></i> Spring-默认标签解析
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">EiletXie</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">225k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">3:25</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+
+  <a href="https://github.com/EiletXie" class="github-corner" title="在 GitHub 上关注我" aria-label="在 GitHub 上关注我" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

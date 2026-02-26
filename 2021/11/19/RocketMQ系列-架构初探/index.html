@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.1">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-minimal.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous" defer></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"eiletxie.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"a11y-dark","dark":"a11y-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="前言： ​    RocketMQ由于是阿里出品，已经有相当不错的官方文档了。这里本人为啥还想写一个技术系列呢？ 1、主要是发现自己对RocketMQ的理解还有不少问题，并且我猜想大家也会跟我一样对某些概念出现了理解偏差，这里想强调说明一下。 2、官网对于某些模块描述的有点简单了，如果你不细心的去查看有可能就会错过一些设计理念或者出现误解。 3、提出一些个人见解同时提升学习效果，便于以后查看复习。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="RocketMQ系列-架构初探">
+<meta property="og:url" content="https://eiletxie.github.io/2021/11/19/RocketMQ%E7%B3%BB%E5%88%97-%E6%9E%B6%E6%9E%84%E5%88%9D%E6%8E%A2/index.html">
+<meta property="og:site_name" content="EiletXie Blog">
+<meta property="og:description" content="前言： ​    RocketMQ由于是阿里出品，已经有相当不错的官方文档了。这里本人为啥还想写一个技术系列呢？ 1、主要是发现自己对RocketMQ的理解还有不少问题，并且我猜想大家也会跟我一样对某些概念出现了理解偏差，这里想强调说明一下。 2、官网对于某些模块描述的有点简单了，如果你不细心的去查看有可能就会错过一些设计理念或者出现误解。 3、提出一些个人见解同时提升学习效果，便于以后查看复习。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://eiletxie.github.io/2021/11/19/RocketMQ%E7%B3%BB%E5%88%97-%E6%9E%B6%E6%9E%84%E5%88%9D%E6%8E%A2/structure.png">
+<meta property="og:image" content="https://eiletxie.github.io/2021/11/19/RocketMQ%E7%B3%BB%E5%88%97-%E6%9E%B6%E6%9E%84%E5%88%9D%E6%8E%A2/brokerServer.png">
+<meta property="article:published_time" content="2021-11-19T09:24:46.000Z">
+<meta property="article:modified_time" content="2021-11-19T11:31:04.390Z">
+<meta property="article:author" content="EiletXie">
+<meta property="article:tag" content="RocketMQ">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://eiletxie.github.io/2021/11/19/RocketMQ%E7%B3%BB%E5%88%97-%E6%9E%B6%E6%9E%84%E5%88%9D%E6%8E%A2/structure.png">
+
+
+<link rel="canonical" href="https://eiletxie.github.io/2021/11/19/RocketMQ%E7%B3%BB%E5%88%97-%E6%9E%B6%E6%9E%84%E5%88%9D%E6%8E%A2/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://eiletxie.github.io/2021/11/19/RocketMQ%E7%B3%BB%E5%88%97-%E6%9E%B6%E6%9E%84%E5%88%9D%E6%8E%A2/","path":"2021/11/19/RocketMQ系列-架构初探/","title":"RocketMQ系列-架构初探"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>RocketMQ系列-架构初探 | EiletXie Blog</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.5.0/search.js" integrity="sha256-xFC6PJ82SL9b3WkGjFavNiA9gm5z6UBxWPiu4CYjptg=" crossorigin="anonymous" defer></script>
+<script src="/js/third-party/search/local-search.js" defer></script>
+
+
+
+
+
+  <script src="/js/third-party/pace.js" defer></script>
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">EiletXie Blog</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">不忘初心 Keep Moving</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#RocketMQ%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84%E5%9B%BE%EF%BC%9A"><span class="nav-number">1.</span> <span class="nav-text">RocketMQ技术架构图：</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%89%B9%E5%88%AB%E8%AF%B4%E6%98%8E%EF%BC%9A"><span class="nav-number">1.1.</span> <span class="nav-text">特别说明：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%A8%A1%E5%9D%97%E8%AF%B4%E6%98%8E%EF%BC%9A"><span class="nav-number">1.2.</span> <span class="nav-text">模块说明：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#RocketMQ-%E7%BD%91%E7%BB%9C%E9%83%A8%E7%BD%B2%E7%89%B9%E7%82%B9"><span class="nav-number">1.3.</span> <span class="nav-text">RocketMQ 网络部署特点</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#RocketMQ%E7%BD%91%E7%BB%9C%E9%83%A8%E7%BD%B2%E6%B5%81%E7%A8%8B%EF%BC%9A"><span class="nav-number">1.4.</span> <span class="nav-text">RocketMQ网络部署流程：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B3%E9%94%AE%E7%89%B9%E6%80%A7%EF%BC%9A"><span class="nav-number">1.5.</span> <span class="nav-text">关键特性：</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1%E3%80%81%E6%B6%88%E6%81%AF%E9%87%8D%E6%8A%95%EF%BC%9A"><span class="nav-number">1.5.1.</span> <span class="nav-text">1、消息重投：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2%E3%80%81%E6%B6%88%E6%81%AF%E5%8F%AF%E9%9D%A0%E6%80%A7"><span class="nav-number">1.5.2.</span> <span class="nav-text">2、消息可靠性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3%E3%80%81%E4%BA%8B%E5%8A%A1%E6%B6%88%E6%81%AF"><span class="nav-number">1.5.3.</span> <span class="nav-text">3、事务消息</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4%E3%80%81%E5%AE%9A%E6%97%B6%E6%B6%88%E6%81%AF"><span class="nav-number">1.5.4.</span> <span class="nav-text">4、定时消息</span></a></li></ol></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="EiletXie"
+      src="/img/header.jpg">
+  <p class="site-author-name" itemprop="name">EiletXie</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">47</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">分类</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">32</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+  <div class="cc-license animated" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" rel="noopener" target="_blank"><img src="https://cdnjs.cloudflare.com/ajax/libs/creativecommons-vocabulary/2020.11.3/assets/license_badges/small/by_nc_sa.svg" alt="Creative Commons"></a>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://eiletxie.github.io/2021/11/19/RocketMQ%E7%B3%BB%E5%88%97-%E6%9E%B6%E6%9E%84%E5%88%9D%E6%8E%A2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/img/header.jpg">
+      <meta itemprop="name" content="EiletXie">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="EiletXie Blog">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="RocketMQ系列-架构初探 | EiletXie Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          RocketMQ系列-架构初探
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2021-11-19 17:24:46 / 修改时间：19:31:04" itemprop="dateCreated datePublished" datetime="2021-11-19T17:24:46+08:00">2021-11-19</time>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>5.7k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>5 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p><strong>前言：</strong></p>
+<p>​    RocketMQ由于是阿里出品，已经有相当不错的官方文档了。这里本人为啥还想写一个技术系列呢？</p>
+<p>1、主要是发现自己对RocketMQ的理解还有不少问题，并且我猜想大家也会跟我一样对某些概念出现了理解偏差，这里想强调说明一下。</p>
+<p>2、官网对于某些模块描述的有点简单了，如果你不细心的去查看有可能就会错过一些设计理念或者出现误解。</p>
+<p>3、提出一些个人见解同时提升学习效果，便于以后查看复习。</p>
+<span id="more"></span> 
+
+<br/>
+
+<h2 id="RocketMQ技术架构图："><a href="#RocketMQ技术架构图：" class="headerlink" title="RocketMQ技术架构图："></a><strong>RocketMQ技术架构图：</strong></h2><img src="/2021/11/19/RocketMQ%E7%B3%BB%E5%88%97-%E6%9E%B6%E6%9E%84%E5%88%9D%E6%8E%A2/structure.png" class="" title="技术架构图">
+
+<br/>
+
+<h4 id="特别说明："><a href="#特别说明：" class="headerlink" title="特别说明："></a><strong>特别说明：</strong></h4><p>​    **Broker：**不要单纯认为Broker是一个基础组件概念，它实际上是一台代理服务器，里面存储Topic、队列，持久化消息，同时有对应的API接口与生产者和消费者做对接，一个Broker就是一台服务器。</p>
+<p>​    <strong>Topic:</strong>    Topic虽然存储在Broker服务器中，但是它不是Broker的附属模块，它是独立的一个设计概念，一个Topic可以存储在多个Broker中，同时一个Broker也可以存储多个Topic，它们之间是一个关联关系，而不是一个从属关系。</p>
+<p>   <strong>NameServer:</strong> 与分布式架构的注册中心类似，主要是用来维护 Topic和Broker的对应关系，使得生产者和消费者可以从NameServer中获取映射关系来找到对应的Topic所在的Broker IP进行对接。</p>
+<p>   <strong>集群：</strong> 基本不会有单台服务器搭建MQ的情况，虽然你确实可以将Broker和NameServer都部署到一台服务器上，但是为了保证MQ的高可用，即避免单点故障、网络问题等情况，同时也避免单台服务器无法满足高峰流量出现消息投递和消费过快的限流问题。无论是NameServer还是 Broker Server基本都会以集群方式来搭建。</p>
+<p>   **长连接：**NameServer与 生产者、消费者、Broker在通信时都是保持长连接的形式，第一个是避免重复的建立连接，减少开销。第二个是为了方便实时监听Broker的运行情况，更新Topic和Broker之间映射关系，并及时通知对应的关联方。</p>
+<br/>
+
+<h4 id="模块说明："><a href="#模块说明：" class="headerlink" title="模块说明："></a><strong>模块说明：</strong></h4><ul>
+<li><p><strong>Producer：</strong> 消息发布的角色。应用在接入MQ对应Jar包后通过NameServer获取了Broker列表后，生产者内部会用MQ的负载均衡模块来进行消息的投递，投递的过程是异步的，支持快速失败。</p>
+</li>
+<li><p><strong>Consumer：</strong> 消息消费的角色。支持以Broker主动推送给Consumer，消费者主动拉取这两种模式对消息进行消费。同时也支持集群方式和广播方式的消费，它提供实时消息订阅机制，可以满足大多数用户的需求。</p>
+</li>
+<li><ul>
+<li>集群方式： 一个消息会根据负载均衡只分发给对应消费组中的其中一个消费者，平均分推的形式。</li>
+<li>广播方式：一个消息会分发给对应消费组中的所有消费者，全量消费的形式。</li>
+</ul>
+</li>
+<li><p>**NameServer：**NameServer是一个非常简单的Topic路由注册中心，其角色类似Dubbo中的zookeeper，支持Broker的动态注册与发现。主要包括两个功能：Broker管理，NameServer接受Broker集群的注册信息并且保存下来作为路由信息的基本数据。然后提供心跳检测机制，检查Broker是否还存活；路由信息管理，每个NameServer将保存关于Broker集群的整个路由信息和用于客户端查询的队列信息。然后Producer和Conumser通过NameServer就可以知道整个Broker集群的路由信息，从而进行消息的投递和消费。NameServer通常也是集群的方式部署，各实例间相互不进行信息通讯。Broker是向每一台NameServer注册自己的路由信息，所以每一个NameServer实例上面都保存一份完整的路由信息。当某个NameServer因某种原因下线了，Broker仍然可以向其它NameServer同步其路由信息，Producer,Consumer仍然可以动态感知Broker的路由的信息。</p>
+</li>
+<li><p>**BrokerServer：**Broker主要负责消息的存储、投递和查询以及服务高可用保证，为了实现这些功能，Broker包含了以下几个重要子模块。</p>
+</li>
+</ul>
+<br/>
+
+<img src="/2021/11/19/RocketMQ%E7%B3%BB%E5%88%97-%E6%9E%B6%E6%9E%84%E5%88%9D%E6%8E%A2/brokerServer.png" class="" title="brokerServer">
+
+
+
+
+
+<h4 id="RocketMQ-网络部署特点"><a href="#RocketMQ-网络部署特点" class="headerlink" title="RocketMQ 网络部署特点"></a><strong>RocketMQ 网络部署特点</strong></h4><ul>
+<li>NameServer是一个几乎无状态节点，可集群部署，节点之间无任何信息同步。</li>
+<li>Broker部署相对复杂，Broker分为Master与Slave，一个Master可以对应多个Slave，但是一个Slave只能对应一个Master，Master与Slave 的对应关系通过指定相同的BrokerName，不同的BrokerId 来定义，BrokerId为0表示Master，非0表示Slave。Master也可以部署多个。每个Broker与NameServer集群中的所有节点建立长连接，定时注册Topic信息到所有NameServer。 注意：当前RocketMQ版本在部署架构上支持一Master多Slave，但只有BrokerId&#x3D;1的从服务器才会参与消息的读负载。</li>
+<li>Producer与NameServer集群中的其中一个节点（随机选择）建立长连接，定期从NameServer获取Topic路由信息，并向提供Topic 服务的Master建立长连接，且定时向Master发送心跳。Producer完全无状态，可集群部署。</li>
+<li>Consumer与NameServer集群中的其中一个节点（随机选择）建立长连接，定期从NameServer获取Topic路由信息，并向提供Topic服务的Master、Slave建立长连接，且定时向Master、Slave发送心跳。Consumer既可以从Master订阅消息，也可以从Slave订阅消息，消费者在向Master拉取消息时，Master服务器会根据拉取偏移量与最大偏移量的距离（判断是否读老消息，产生读I&#x2F;O），以及从服务器是否可读等因素建议下一次是从Master还是Slave拉取。</li>
+</ul>
+<h4 id="RocketMQ网络部署流程："><a href="#RocketMQ网络部署流程：" class="headerlink" title="RocketMQ网络部署流程："></a><strong>RocketMQ网络部署流程：</strong></h4><ul>
+<li>启动NameServer，NameServer起来后监听端口，等待Broker、Producer、Consumer连上来，相当于一个路由控制中心。</li>
+<li>Broker启动，跟所有的NameServer保持长连接，定时发送心跳包。心跳包中包含当前Broker信息(IP+端口等)以及存储所有Topic信息。注册成功后，NameServer集群中就有Topic跟Broker的映射关系。</li>
+<li>收发消息前，先创建Topic，创建Topic时需要指定该Topic要存储在哪些Broker上，也可以在发送消息时自动创建Topic。</li>
+<li>Producer发送消息，启动时先跟NameServer集群中的其中一台建立长连接，并从NameServer中获取当前发送的Topic存在哪些Broker上，轮询从队列列表中选择一个队列，然后与队列所在的Broker建立长连接从而向Broker发消息。</li>
+<li>Consumer跟Producer类似，跟其中一台NameServer建立长连接，获取当前订阅Topic存在哪些Broker上，然后直接跟Broker建立连接通道，开始消费消息。</li>
+</ul>
+<h3 id="关键特性："><a href="#关键特性：" class="headerlink" title="关键特性："></a><strong>关键特性：</strong></h3><h4 id="1、消息重投："><a href="#1、消息重投：" class="headerlink" title="1、消息重投："></a><strong>1、消息重投：</strong></h4><p>​    当生产者投递消息给Broker在指定时间内未收到ack确认时，或者直接投递失败，便会触发消息重投。消息重投保证消息尽可能发送成功、不丢失，但可能会造成消息重复，消息重复在RocketMQ中是无法避免的问题。消息重复在一般情况下不会发生，当出现消息量大、网络抖动，消息重复就会是大概率事件。另外，生产者主动重发、consumer负载变化也会导致重复消息。如下方法可以设置消息重试策略：</p>
+<ul>
+<li>retryTimesWhenSendFailed:同步发送失败重投次数，默认为2，因此生产者会最多尝试发送retryTimesWhenSendFailed + 1次。不会选择上次失败的broker，尝试向其他broker发送，最大程度保证消息不丢。超过重投次数，抛出异常，由客户端保证消息不丢。当出现RemotingException、MQClientException和部分MQBrokerException时会重投。</li>
+<li>retryTimesWhenSendAsyncFailed:异步发送失败重试次数，异步重试不会选择其他broker，仅在同一个broker上做重试，不保证消息不丢。</li>
+<li>retryAnotherBrokerWhenNotStoreOK:消息刷盘（主或备）超时或slave不可用（返回状态非SEND_OK），是否尝试发送到其他broker，默认false。十分重要消息可以开启。</li>
+</ul>
+<h4 id="2、消息可靠性"><a href="#2、消息可靠性" class="headerlink" title="2、消息可靠性"></a><strong>2、消息可靠性</strong></h4><p>​    RocketMQ支持消息的高可靠，影响消息可靠性的几种情况：</p>
+<ol>
+<li>Broker非正常关闭</li>
+<li>Broker异常Crash</li>
+<li>OS Crash</li>
+<li>机器掉电，但是能立即恢复供电情况</li>
+<li>机器无法开机（可能是cpu、主板、内存等关键设备损坏）</li>
+<li>磁盘设备损坏</li>
+</ol>
+<p>1)、2)、3)、4) 四种情况都属于硬件资源可立即恢复情况，RocketMQ在这四种情况下能保证消息不丢，或者丢失少量数据（依赖刷盘方式是同步还是异步）。</p>
+<p>5)、6)属于单点故障，且无法恢复，一旦发生，在此单点上的消息全部丢失。RocketMQ在这两种情况下，通过异步复制，可保证99%的消息不丢，但是仍然会有极少量的消息可能丢失。通过同步双写技术可以完全避免单点，同步双写势必会影响性能，适合对消息可靠性要求极高的场合，例如与Money相关的应用。注：RocketMQ从3.0版本开始支持同步双写。</p>
+<h4 id="3、事务消息"><a href="#3、事务消息" class="headerlink" title="3、事务消息"></a><strong>3、事务消息</strong></h4><p>​    RocketMQ事务消息（Transactional Message）是指应用本地事务和发送消息操作可以被定义到全局事务中，要么同时成功，要么同时失败。RocketMQ的事务消息提供类似 X&#x2F;Open XA 的分布事务功能，通过事务消息能达到分布式事务的最终一致。</p>
+<p>   XA是DTP的一部分接口规范，聊到分布式事务就要说一下DTP(Distributed Transaction Processing)分布式事务处理模型了。</p>
+<p>DTP有三种角色组成：</p>
+<p>  <strong>应用程序（Application Program，AP）</strong>：这个角色要做两件事情，一方面是定义构成整个事务所需要的所有操作，另一方面是亲自访问资源节点来执行操作。</p>
+<p> <strong>资源管理器（Resource Managers，RM）：</strong> 这个角色是管理着某些共享资源的自治域，比如说一个MySQL数据库实例。在DTP里面，还有两个要求，一是RM自身必须是支持事务的，二是RM能够根据映射关系将全局（分布式）事务标识定位到自己内部的对应事务。</p>
+<p>**事务管理器（Transaction Manager，TM）：**这个角色能与AP和RM直接通信，协调AP和RM来实现分布式事务的完整性。主要的工作是提供AP注册全局事务的接口，颁发全局事务标识（GTID之类 的），存储&#x2F;管理全局事务的内容和决策并指挥RM做commit&#x2F;rollback。</p>
+<p>XA在哪里？<strong>XA是RM和TM的交互规范和接口定义</strong></p>
+<p><strong>extended Architecture（XA）</strong></p>
+<p>TM和RM们之间使用的是上文提到的《ISO&#x2F;TEC DIS 10026-1 (1991) (model)》所定义的二阶段提交。在XA规范的描述中，两阶段提交TM协调RM们完成已定义的全局事务的方法，<em>AP找TM申请&#x2F;注册全局事务</em>的动作并不是二阶段提交的保障内容。</p>
+<p><strong>二阶段提交（two-phase commit）</strong></p>
+<p>对于单个全局（分布式）事务，在DTP环境中，二阶段提交流程大致如下：</p>
+<ol>
+<li><em>第一阶段（Phase 1）</em></li>
+</ol>
+<p>TM请求<em>所有RM</em>进行<em>准备</em>（prepare commit, or prepare），并告知它们各自需要做的局部事务（transaction branche）。RM收到请求后，如果判断可以完成自己的局部事务，那就持久化局部事务的工作内容，再给TM肯定答复；要是发生了其他情况，那给TM的都是否定答复。在发送了否定答复并回滚了局部事务之后，RM才能丢弃持久化了的局部事务信息。</p>
+<ol>
+<li><em>第二阶段（Phase 2）</em></li>
+</ol>
+<p>TM根据情况（比如说所有RM都prepare成功，或者，AP通知它要rollback等），先持久化它对这个全局事务的处理决定和所涉及的RM清单，然后通知所有涉及的RM去提交（commit）或者回滚（rollback）它们的局部事务。RM们处理完自己的局部事务后，将返回值告诉TM之后，TM才可以清除掉包括刚才持久化的处理决定和RM清单在内的这个全局事务的信息。</p>
+<h4 id="4、定时消息"><a href="#4、定时消息" class="headerlink" title="4、定时消息"></a>4、定时消息</h4><p>定时消息（延迟队列）是指消息发送到broker后，不会立即被消费，等待特定时间投递给真正的topic。 broker有配置项messageDelayLevel，默认值为“1s 5s 10s 30s 1m 2m 3m 4m 5m 6m 7m 8m 9m 10m 20m 30m 1h 2h”，18个level。可以配置自定义messageDelayLevel。注意，messageDelayLevel是broker的属性，不属于某个topic。发消息时，设置delayLevel等级即可：msg.setDelayLevel(level)。level有以下三种情况：</p>
+<ul>
+<li>level &#x3D;&#x3D; 0，消息为非延迟消息</li>
+<li>1&lt;&#x3D;level&lt;&#x3D;maxLevel，消息延迟特定时间，例如level&#x3D;&#x3D;1，延迟1s</li>
+<li>level &gt; maxLevel，则level&#x3D;&#x3D; maxLevel，例如level&#x3D;&#x3D;20，延迟2h</li>
+</ul>
+<p>定时消息会暂存在名为SCHEDULE_TOPIC_XXXX的topic中，并根据delayTimeLevel存入特定的queue，queueId &#x3D; delayTimeLevel – 1，即一个queue只存相同延迟的消息，保证具有相同发送延迟的消息能够顺序消费。broker会调度地消费SCHEDULE_TOPIC_XXXX，将消息写入真实的topic。</p>
+<p>需要注意的是，定时消息会在第一次写入和调度写入真实topic时都会计数，因此发送数量、tps都会变高。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>本文作者： </strong>EiletXie
+  </li>
+  <li class="post-copyright-link">
+      <strong>本文链接：</strong>
+      <a href="https://eiletxie.github.io/2021/11/19/RocketMQ%E7%B3%BB%E5%88%97-%E6%9E%B6%E6%9E%84%E5%88%9D%E6%8E%A2/" title="RocketMQ系列-架构初探">https://eiletxie.github.io/2021/11/19/RocketMQ系列-架构初探/</a>
+  </li>
+  <li class="post-copyright-license">
+      <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/RocketMQ/" rel="tag"># RocketMQ</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2021/09/05/Redis%E8%AE%BE%E8%AE%A1-%E5%AD%97%E7%AC%A6%E4%B8%B2%E3%80%81%E5%88%97%E8%A1%A8%E3%80%81%E5%AD%97%E5%85%B8/" rel="prev" title="Redis设计-字符串、列表、字典">
+                  <i class="fa fa-angle-left"></i> Redis设计-字符串、列表、字典
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2021/12/06/RocketMQ%E7%B3%BB%E5%88%97-%E4%BA%8B%E5%8A%A1%E6%B6%88%E6%81%AF%E4%B8%8E%E6%B6%88%E6%81%AF%E5%AD%98%E5%82%A8/" rel="next" title="RocketMQ系列-事务消息与消息存储">
+                  RocketMQ系列-事务消息与消息存储 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">EiletXie</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">225k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">3:25</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+
+  <a href="https://github.com/EiletXie" class="github-corner" title="在 GitHub 上关注我" aria-label="在 GitHub 上关注我" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

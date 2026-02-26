@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.1">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-minimal.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous" defer></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"eiletxie.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"a11y-dark","dark":"a11y-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="130. 被围绕的区域题目描述：给定一个二维的矩阵，包含 ‘X’ 和 ‘O’（字母 O）。 找到所有被 ‘X’ 围绕的区域，并将这些区域里所有的 ‘O’ 用 ‘X’ 填充。 示例: 1234X X X XX O O XX X O XX O X X  运行你的函数后，矩阵变为： 1234X X X XX X X XX X X XX O X X  解释: 被围绕的区间不会存在于边界上，换句话说，任何边">
+<meta property="og:type" content="article">
+<meta property="og:title" content="130-被围绕的区域">
+<meta property="og:url" content="https://eiletxie.github.io/2019/08/05/130-%E8%A2%AB%E5%9B%B4%E7%BB%95%E7%9A%84%E5%8C%BA%E5%9F%9F/index.html">
+<meta property="og:site_name" content="EiletXie Blog">
+<meta property="og:description" content="130. 被围绕的区域题目描述：给定一个二维的矩阵，包含 ‘X’ 和 ‘O’（字母 O）。 找到所有被 ‘X’ 围绕的区域，并将这些区域里所有的 ‘O’ 用 ‘X’ 填充。 示例: 1234X X X XX O O XX X O XX O X X  运行你的函数后，矩阵变为： 1234X X X XX X X XX X X XX O X X  解释: 被围绕的区间不会存在于边界上，换句话说，任何边">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2019-08-05T08:30:22.000Z">
+<meta property="article:modified_time" content="2019-12-08T06:33:44.817Z">
+<meta property="article:author" content="EiletXie">
+<meta property="article:tag" content="leetcode">
+<meta property="article:tag" content="并查集">
+<meta property="article:tag" content="深度优先搜索">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://eiletxie.github.io/2019/08/05/130-%E8%A2%AB%E5%9B%B4%E7%BB%95%E7%9A%84%E5%8C%BA%E5%9F%9F/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://eiletxie.github.io/2019/08/05/130-%E8%A2%AB%E5%9B%B4%E7%BB%95%E7%9A%84%E5%8C%BA%E5%9F%9F/","path":"2019/08/05/130-被围绕的区域/","title":"130-被围绕的区域"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>130-被围绕的区域 | EiletXie Blog</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.5.0/search.js" integrity="sha256-xFC6PJ82SL9b3WkGjFavNiA9gm5z6UBxWPiu4CYjptg=" crossorigin="anonymous" defer></script>
+<script src="/js/third-party/search/local-search.js" defer></script>
+
+
+
+
+
+  <script src="/js/third-party/pace.js" defer></script>
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">EiletXie Blog</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">不忘初心 Keep Moving</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#130-%E8%A2%AB%E5%9B%B4%E7%BB%95%E7%9A%84%E5%8C%BA%E5%9F%9F"><span class="nav-number">1.</span> <span class="nav-text">130. 被围绕的区域</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A2%98%E7%9B%AE%E6%8F%8F%E8%BF%B0%EF%BC%9A"><span class="nav-number">1.1.</span> <span class="nav-text">题目描述：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%A3%E9%A2%98%E6%80%9D%E8%B7%AF%EF%BC%9A"><span class="nav-number">1.2.</span> <span class="nav-text">解题思路：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%A3%E9%A2%98%E4%BB%A3%E7%A0%81%EF%BC%9A"><span class="nav-number">1.3.</span> <span class="nav-text">解题代码：</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E4%B8%80%E4%BA%8C%E7%A7%8D%E8%A7%A3%E6%B3%95%EF%BC%9ADFS%E7%9A%84%E9%80%92%E5%BD%92%E4%B8%8E%E9%9D%9E%E9%80%92%E5%BD%92"><span class="nav-number">1.3.1.</span> <span class="nav-text">第一二种解法：DFS的递归与非递归</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC%E4%B8%89%E7%A7%8D%E8%A7%A3%E6%B3%95%EF%BC%9A%E5%B9%B6%E6%9F%A5%E9%9B%86"><span class="nav-number">1.3.2.</span> <span class="nav-text">第三种解法：并查集</span></a></li></ol></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="EiletXie"
+      src="/img/header.jpg">
+  <p class="site-author-name" itemprop="name">EiletXie</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">47</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">分类</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">32</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+  <div class="cc-license animated" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" rel="noopener" target="_blank"><img src="https://cdnjs.cloudflare.com/ajax/libs/creativecommons-vocabulary/2020.11.3/assets/license_badges/small/by_nc_sa.svg" alt="Creative Commons"></a>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://eiletxie.github.io/2019/08/05/130-%E8%A2%AB%E5%9B%B4%E7%BB%95%E7%9A%84%E5%8C%BA%E5%9F%9F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/img/header.jpg">
+      <meta itemprop="name" content="EiletXie">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="EiletXie Blog">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="130-被围绕的区域 | EiletXie Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          130-被围绕的区域
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2019-08-05 16:30:22" itemprop="dateCreated datePublished" datetime="2019-08-05T16:30:22+08:00">2019-08-05</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2019-12-08 14:33:44" itemprop="dateModified" datetime="2019-12-08T14:33:44+08:00">2019-12-08</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/" itemprop="url" rel="index"><span itemprop="name">数据结构</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>6k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>5 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="130-被围绕的区域"><a href="#130-被围绕的区域" class="headerlink" title="130. 被围绕的区域"></a><a target="_blank" rel="noopener" href="https://leetcode-cn.com/problems/surrounded-regions/">130. 被围绕的区域</a></h1><h2 id="题目描述："><a href="#题目描述：" class="headerlink" title="题目描述："></a>题目描述：</h2><p>给定一个二维的矩阵，包含 ‘X’ 和 ‘O’（字母 O）。</p>
+<p>找到所有被 ‘X’ 围绕的区域，并将这些区域里所有的 ‘O’ 用 ‘X’ 填充。</p>
+<p><strong>示例:</strong></p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">X X X X</span><br><span class="line">X O O X</span><br><span class="line">X X O X</span><br><span class="line">X O X X</span><br></pre></td></tr></table></figure>
+
+<p>运行你的函数后，矩阵变为：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">X X X X</span><br><span class="line">X X X X</span><br><span class="line">X X X X</span><br><span class="line">X O X X</span><br></pre></td></tr></table></figure>
+
+<p><strong>解释:</strong></p>
+<p>被围绕的区间不会存在于边界上，换句话说，任何边界上的 ‘O’ 都不会被填充为 ‘X’。 任何不在边界上，或不与边界上的 ‘O’ 相连的 ‘O’ 最终都会被填充为 ‘X’。如果两个元素在水平或垂直方向相邻，则称它们是“相连”的。</p>
+<span id="more"></span>
+<h2 id="解题思路："><a href="#解题思路：" class="headerlink" title="解题思路："></a>解题思路：</h2><p>1、我们将边缘的O点记录下来，将这些O点同意进行深度优先遍历，</p>
+<p>2、与边缘O点上下左右方向相关联的所有O坐标都记录下来，</p>
+<p>3、最后将未被记录的O边覆盖成X</p>
+<p>可以使用DFS的递归与非递归的做法。</p>
+<p>​         涉及图论区间相连，判断区间数和是否连接的都可以用并查集来做，这里注意的地方是 并查集的内部一维数组设置为 给定数组size + 1，这个多出来的一作为虚拟头结点 dummyNode,它用来作为所有边缘O点的父节点，从而可以压缩路径，让最后的统计判断中查询与边缘O点相连接的O坐标是哪些变的容易起来。</p>
+<h2 id="解题代码："><a href="#解题代码：" class="headerlink" title="解题代码："></a>解题代码：</h2><h3 id="第一二种解法：DFS的递归与非递归"><a href="#第一二种解法：DFS的递归与非递归" class="headerlink" title="第一二种解法：DFS的递归与非递归"></a>第一二种解法：DFS的递归与非递归</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.ArrayList;</span><br><span class="line"><span class="keyword">import</span> java.util.LinkedList;</span><br><span class="line"><span class="keyword">import</span> java.util.List;</span><br><span class="line"><span class="keyword">import</span> java.util.Queue;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> javafx.util.Pair;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">SurrendArea130</span> &#123;</span><br><span class="line">   <span class="comment">// DFS非递归，用数组记录O点</span></span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">solve</span><span class="params">(<span class="type">char</span>[][] board)</span> &#123;</span><br><span class="line">		<span class="comment">// 思路： 记录最边缘的O点，遍历O点 这种做法时空复杂度 m*n</span></span><br><span class="line">		<span class="keyword">if</span> (board == <span class="literal">null</span> || board.length &lt;= <span class="number">2</span>)</span><br><span class="line">			<span class="keyword">return</span>;</span><br><span class="line"></span><br><span class="line">		<span class="type">int</span> <span class="variable">xlen</span> <span class="operator">=</span> board[<span class="number">0</span>].length;</span><br><span class="line">		<span class="type">int</span> <span class="variable">ylen</span> <span class="operator">=</span> board.length;</span><br><span class="line"></span><br><span class="line">		<span class="comment">// 这种pair对象的写法，是我看到一些官方题解中使用过,但是总觉得没有 自己设置的private class Node这种用的舒服</span></span><br><span class="line">		List&lt;Pair&lt;Integer, Integer&gt;&gt; list = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;();</span><br><span class="line">		<span class="comment">// 记录边缘的O点</span></span><br><span class="line">		<span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; xlen; i++) &#123;</span><br><span class="line">			<span class="keyword">if</span> (board[<span class="number">0</span>][i] == <span class="string">&#x27;O&#x27;</span>)</span><br><span class="line">				list.add(<span class="keyword">new</span> <span class="title class_">Pair</span>&lt;Integer, Integer&gt;(<span class="number">0</span>, i));</span><br><span class="line"></span><br><span class="line">			<span class="keyword">if</span> (board[ylen - <span class="number">1</span>][i] == <span class="string">&#x27;O&#x27;</span>)</span><br><span class="line">				list.add(<span class="keyword">new</span> <span class="title class_">Pair</span>&lt;Integer, Integer&gt;(ylen - <span class="number">1</span>, i));</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>; i &lt; ylen - <span class="number">1</span>; i++) &#123;</span><br><span class="line">			<span class="keyword">if</span> (board[i][<span class="number">0</span>] == <span class="string">&#x27;O&#x27;</span>)</span><br><span class="line">				list.add(<span class="keyword">new</span> <span class="title class_">Pair</span>&lt;Integer, Integer&gt;(i, <span class="number">0</span>));</span><br><span class="line"></span><br><span class="line">			<span class="keyword">if</span> (board[i][xlen - <span class="number">1</span>] == <span class="string">&#x27;O&#x27;</span>)</span><br><span class="line">				list.add(<span class="keyword">new</span> <span class="title class_">Pair</span>&lt;Integer, Integer&gt;(i, xlen - <span class="number">1</span>));</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">for</span> (Pair&lt;Integer, Integer&gt; pair : list) &#123;</span><br><span class="line">			Queue&lt;Pair&lt;Integer, Integer&gt;&gt; q = <span class="keyword">new</span> <span class="title class_">LinkedList</span>&lt;&gt;();</span><br><span class="line">			<span class="keyword">if</span> (board[pair.getKey()][pair.getValue()] != <span class="string">&#x27;Y&#x27;</span>) &#123;</span><br><span class="line">				q.add(pair);</span><br><span class="line">				<span class="keyword">while</span> (!q.isEmpty()) &#123;</span><br><span class="line">					<span class="type">int</span> <span class="variable">x</span> <span class="operator">=</span> q.peek().getKey();</span><br><span class="line">					<span class="type">int</span> <span class="variable">y</span> <span class="operator">=</span> q.peek().getValue();</span><br><span class="line">					q.remove();</span><br><span class="line">					board[x][y] = <span class="string">&#x27;Y&#x27;</span>;</span><br><span class="line"></span><br><span class="line">					<span class="keyword">if</span> (y + <span class="number">1</span> &lt; xlen &amp;&amp; board[x][y + <span class="number">1</span>] == <span class="string">&#x27;O&#x27;</span>)</span><br><span class="line">						q.add(<span class="keyword">new</span> <span class="title class_">Pair</span>(x, y + <span class="number">1</span>));</span><br><span class="line"></span><br><span class="line">					<span class="keyword">if</span> (x + <span class="number">1</span> &lt; ylen &amp;&amp; board[x + <span class="number">1</span>][y] == <span class="string">&#x27;O&#x27;</span>)</span><br><span class="line">						q.add(<span class="keyword">new</span> <span class="title class_">Pair</span>(x + <span class="number">1</span>, y));</span><br><span class="line"></span><br><span class="line">					<span class="keyword">if</span> (y - <span class="number">1</span> &gt;= <span class="number">0</span> &amp;&amp; board[x][y - <span class="number">1</span>] == <span class="string">&#x27;O&#x27;</span>)</span><br><span class="line">						q.add(<span class="keyword">new</span> <span class="title class_">Pair</span>(x, y - <span class="number">1</span>));</span><br><span class="line"></span><br><span class="line">					<span class="keyword">if</span> (x - <span class="number">1</span> &gt;= <span class="number">0</span> &amp;&amp; board[x - <span class="number">1</span>][y] == <span class="string">&#x27;O&#x27;</span>)</span><br><span class="line">						q.add(<span class="keyword">new</span> <span class="title class_">Pair</span>(x - <span class="number">1</span>, y));</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; ylen; i++) &#123;</span><br><span class="line">			<span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">0</span>; j &lt; xlen; j++) &#123;</span><br><span class="line">				<span class="comment">// 如果是Y证明是可与边缘O连接的O</span></span><br><span class="line">				<span class="keyword">if</span> (board[i][j] == <span class="string">&#x27;Y&#x27;</span>)</span><br><span class="line">					board[i][j] = <span class="string">&#x27;O&#x27;</span>;</span><br><span class="line">				<span class="keyword">else</span> <span class="keyword">if</span> (board[i][j] == <span class="string">&#x27;O&#x27;</span>)</span><br><span class="line">					board[i][j] = <span class="string">&#x27;X&#x27;</span>;</span><br><span class="line">				System.out.print(board[i][j]);</span><br><span class="line">			&#125;</span><br><span class="line">			System.out.println();</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 第一种做法，超时了，第一是用到了pair对象存储消耗资源，第二种做法用DFS递归要快点</span></span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">solve2</span><span class="params">(<span class="type">char</span>[][] board)</span> &#123;</span><br><span class="line">		<span class="keyword">if</span> (board == <span class="literal">null</span> || board.length &lt;= <span class="number">2</span>)</span><br><span class="line">			<span class="keyword">return</span>;</span><br><span class="line"></span><br><span class="line">		<span class="type">int</span> <span class="variable">xlen</span> <span class="operator">=</span> board[<span class="number">0</span>].length;</span><br><span class="line">		<span class="type">int</span> <span class="variable">ylen</span> <span class="operator">=</span> board.length;</span><br><span class="line"></span><br><span class="line">		<span class="comment">// 这种在遍历的时候就深度优先时直接递归的好处在于将连着的边界O都一起处理了,所以速度较快，测试用例执行只要4ms</span></span><br><span class="line">		<span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; xlen; i++) &#123;</span><br><span class="line">			<span class="keyword">if</span> (board[<span class="number">0</span>][i] == <span class="string">&#x27;O&#x27;</span>)</span><br><span class="line">				dfs(board, <span class="number">0</span>, i);</span><br><span class="line"></span><br><span class="line">			<span class="keyword">if</span> (board[ylen - <span class="number">1</span>][i] == <span class="string">&#x27;O&#x27;</span>)</span><br><span class="line">				dfs(board, ylen - <span class="number">1</span>, i);</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>; i &lt; ylen - <span class="number">1</span>; i++) &#123;</span><br><span class="line">			<span class="keyword">if</span> (board[i][<span class="number">0</span>] == <span class="string">&#x27;O&#x27;</span>)</span><br><span class="line">				dfs(board, i, <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">			<span class="keyword">if</span> (board[i][xlen - <span class="number">1</span>] == <span class="string">&#x27;O&#x27;</span>)</span><br><span class="line">				dfs(board, i, xlen - <span class="number">1</span>);</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; ylen; i++) &#123;</span><br><span class="line">			<span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">0</span>; j &lt; xlen; j++) &#123;</span><br><span class="line">				<span class="comment">// 如果是Y证明是可与边缘O连接的O</span></span><br><span class="line">				<span class="keyword">if</span> (board[i][j] == <span class="string">&#x27;Y&#x27;</span>)</span><br><span class="line">					board[i][j] = <span class="string">&#x27;O&#x27;</span>;</span><br><span class="line">				<span class="keyword">else</span> <span class="keyword">if</span> (board[i][j] == <span class="string">&#x27;O&#x27;</span>)</span><br><span class="line">					board[i][j] = <span class="string">&#x27;X&#x27;</span>;</span><br><span class="line">				System.out.print(board[i][j]);</span><br><span class="line">			&#125;</span><br><span class="line">			System.out.println();</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 深度递归</span></span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">dfs</span><span class="params">(<span class="type">char</span>[][] board, <span class="type">int</span> i, <span class="type">int</span> j)</span> &#123;</span><br><span class="line">		<span class="keyword">if</span> (!(i &lt; board.length &amp;&amp; i &gt;= <span class="number">0</span> &amp;&amp; j &gt;= <span class="number">0</span> &amp;&amp; j &lt; board[<span class="number">0</span>].length))</span><br><span class="line">			<span class="keyword">return</span>;</span><br><span class="line">		</span><br><span class="line">		<span class="keyword">if</span>(board[i][j] == <span class="string">&#x27;X&#x27;</span> || board[i][j] == <span class="string">&#x27;Y&#x27;</span>)</span><br><span class="line">			<span class="keyword">return</span>;</span><br><span class="line">        		</span><br><span class="line">		</span><br><span class="line"></span><br><span class="line">		board[i][j] = <span class="string">&#x27;Y&#x27;</span>;</span><br><span class="line">		dfs(board, i - <span class="number">1</span>, j);</span><br><span class="line">		dfs(board, i + <span class="number">1</span>, j);</span><br><span class="line">		dfs(board, i, j + <span class="number">1</span>);</span><br><span class="line">		dfs(board, i, j - <span class="number">1</span>);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">		<span class="type">char</span>[][] board = &#123;&#123;<span class="string">&#x27;X&#x27;</span>,<span class="string">&#x27;O&#x27;</span>,<span class="string">&#x27;X&#x27;</span>,<span class="string">&#x27;O&#x27;</span>,<span class="string">&#x27;X&#x27;</span>,<span class="string">&#x27;O&#x27;</span>&#125;,&#123;<span class="string">&#x27;O&#x27;</span>,<span class="string">&#x27;X&#x27;</span>,<span class="string">&#x27;O&#x27;</span>,<span class="string">&#x27;X&#x27;</span>,<span class="string">&#x27;O&#x27;</span>,<span class="string">&#x27;X&#x27;</span>&#125;,&#123;<span class="string">&#x27;X&#x27;</span>,<span class="string">&#x27;O&#x27;</span>,<span class="string">&#x27;X&#x27;</span>,<span class="string">&#x27;O&#x27;</span>,<span class="string">&#x27;X&#x27;</span>,<span class="string">&#x27;O&#x27;</span>&#125;,&#123;<span class="string">&#x27;O&#x27;</span>,<span class="string">&#x27;X&#x27;</span>,<span class="string">&#x27;O&#x27;</span>,<span class="string">&#x27;X&#x27;</span>,<span class="string">&#x27;O&#x27;</span>,<span class="string">&#x27;X&#x27;</span>&#125;&#125;;</span><br><span class="line">		<span class="keyword">new</span> <span class="title class_">SurrendArea130</span>().solve2(board);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="第三种解法：并查集"><a href="#第三种解法：并查集" class="headerlink" title="第三种解法：并查集"></a>第三种解法：并查集</h3><blockquote>
+<p>&#x2F;&#x2F; 第 3 种解法：<br>只要是图论的区块覆盖或者是 取区块数的基本都是可以用并查集来做的。那么这题用并查集怎么做呢？</p>
+<ul>
+<li>其实是可以做的，我们记录了边缘的O的坐标，也是检查它的上下左右连接的O点，</li>
+<li>然后 union合并。合并的时候顺带赋值操作</li>
+<li>注意：这里可以设置 并查集时 它的大小为 原数组大小 + 1,</li>
+<li>这个 首节点 dummyNode 作为所有的边缘O的父节点,这样便于统一进行查找与边缘O相连接的节点</li>
+<li>然后我们遍历数组判断是不是和dummyNode连接，这样数据结构比深度遍历要繁琐一点，相比直接数组形式的深度递归要慢一点</li>
+</ul>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Solution</span> &#123;</span><br><span class="line">  </span><br><span class="line">		<span class="keyword">private</span> <span class="keyword">class</span> <span class="title class_">UnionFind</span> &#123;</span><br><span class="line">		<span class="keyword">public</span> <span class="type">int</span>[] parent;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">public</span> <span class="title function_">UnionFind</span><span class="params">(<span class="type">int</span> size)</span> &#123;</span><br><span class="line">			parent = <span class="keyword">new</span> <span class="title class_">int</span>[size];</span><br><span class="line">			<span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; size; i++) &#123;</span><br><span class="line">				parent[i] = i;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">public</span> <span class="type">int</span> <span class="title function_">find</span><span class="params">(<span class="type">int</span> p)</span> &#123;</span><br><span class="line">			<span class="keyword">if</span> (p != parent[p])</span><br><span class="line">				p = find(parent[p]);</span><br><span class="line">			<span class="keyword">return</span> p;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="comment">// 这里q为父节点</span></span><br><span class="line">		<span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">union</span><span class="params">(<span class="type">int</span> p, <span class="type">int</span> q)</span> &#123;</span><br><span class="line">			p = find(p);</span><br><span class="line">			q = find(q);</span><br><span class="line">			<span class="keyword">if</span> (p == q)</span><br><span class="line">				<span class="keyword">return</span>;</span><br><span class="line">			parent[p] = q;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">public</span> <span class="type">boolean</span> <span class="title function_">isConnnected</span><span class="params">(<span class="type">int</span> p, <span class="type">int</span> q)</span> &#123;</span><br><span class="line">			<span class="keyword">return</span> find(p) == find(q);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">solve</span><span class="params">(<span class="type">char</span>[][] board)</span> &#123;</span><br><span class="line">		<span class="keyword">if</span> (board == <span class="literal">null</span> || board.length &lt;= <span class="number">2</span>)</span><br><span class="line">			<span class="keyword">return</span>;</span><br><span class="line"></span><br><span class="line">		<span class="type">int</span> <span class="variable">xlen</span> <span class="operator">=</span> board[<span class="number">0</span>].length;</span><br><span class="line">		<span class="type">int</span> <span class="variable">ylen</span> <span class="operator">=</span> board.length;</span><br><span class="line"></span><br><span class="line">		<span class="type">UnionFind</span> <span class="variable">uf</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">UnionFind</span>(xlen * ylen + <span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">		<span class="comment">// 这种在遍历的时候就深度优先时直接递归的好处在于将边界的一个O点处理的时候把连着的边界O都一起处理了,所以速度较快，测试用例执行只要4ms</span></span><br><span class="line">		<span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; xlen; i++) &#123;</span><br><span class="line">			<span class="keyword">if</span> (board[<span class="number">0</span>][i] == <span class="string">&#x27;O&#x27;</span>)</span><br><span class="line">				dfs(board, <span class="number">0</span>, i, uf);</span><br><span class="line"></span><br><span class="line">			<span class="keyword">if</span> (board[ylen - <span class="number">1</span>][i] == <span class="string">&#x27;O&#x27;</span>)</span><br><span class="line">				dfs(board, ylen - <span class="number">1</span>, i, uf);</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">1</span>; i &lt; ylen - <span class="number">1</span>; i++) &#123;</span><br><span class="line">			<span class="keyword">if</span> (board[i][<span class="number">0</span>] == <span class="string">&#x27;O&#x27;</span>)</span><br><span class="line">				dfs(board, i, <span class="number">0</span>, uf);</span><br><span class="line"></span><br><span class="line">			<span class="keyword">if</span> (board[i][xlen - <span class="number">1</span>] == <span class="string">&#x27;O&#x27;</span>)</span><br><span class="line">				dfs(board, i, xlen - <span class="number">1</span>, uf);</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; ylen; i++) &#123;</span><br><span class="line">			<span class="keyword">for</span> (<span class="type">int</span> <span class="variable">j</span> <span class="operator">=</span> <span class="number">0</span>; j &lt; xlen; j++) &#123;</span><br><span class="line">				<span class="comment">// 如果是Y证明是可与边缘O连接的O,首节点作为虚拟头结点</span></span><br><span class="line">				<span class="keyword">if</span> (uf.isConnnected(i * xlen + j + <span class="number">1</span>, <span class="number">0</span>))</span><br><span class="line">					board[i][j] = <span class="string">&#x27;O&#x27;</span>;</span><br><span class="line">				<span class="keyword">else</span></span><br><span class="line">					board[i][j] = <span class="string">&#x27;X&#x27;</span>;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 深度递归</span></span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">dfs</span><span class="params">(<span class="type">char</span>[][] board, <span class="type">int</span> i, <span class="type">int</span> j, UnionFind uf)</span> &#123;</span><br><span class="line">		<span class="type">int</span> <span class="variable">xlen</span> <span class="operator">=</span> board[<span class="number">0</span>].length;</span><br><span class="line">		<span class="keyword">if</span> (!(i &lt; board.length &amp;&amp; i &gt;= <span class="number">0</span> &amp;&amp; j &gt;= <span class="number">0</span> &amp;&amp; j &lt; xlen))</span><br><span class="line">			<span class="keyword">return</span>;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">if</span> (board[i][j] == <span class="string">&#x27;X&#x27;</span> || uf.isConnnected(i * xlen + j + <span class="number">1</span>, <span class="number">0</span>))</span><br><span class="line">			<span class="keyword">return</span>;</span><br><span class="line"></span><br><span class="line">		uf.union(i * xlen + j + <span class="number">1</span>, <span class="number">0</span>);</span><br><span class="line">		dfs(board, i - <span class="number">1</span>, j, uf);</span><br><span class="line">		dfs(board, i + <span class="number">1</span>, j, uf);</span><br><span class="line">		dfs(board, i, j + <span class="number">1</span>, uf);</span><br><span class="line">		dfs(board, i, j - <span class="number">1</span>, uf);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>本文作者： </strong>EiletXie
+  </li>
+  <li class="post-copyright-link">
+      <strong>本文链接：</strong>
+      <a href="https://eiletxie.github.io/2019/08/05/130-%E8%A2%AB%E5%9B%B4%E7%BB%95%E7%9A%84%E5%8C%BA%E5%9F%9F/" title="130-被围绕的区域">https://eiletxie.github.io/2019/08/05/130-被围绕的区域/</a>
+  </li>
+  <li class="post-copyright-license">
+      <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/leetcode/" rel="tag"># leetcode</a>
+              <a href="/tags/%E6%B7%B1%E5%BA%A6%E4%BC%98%E5%85%88%E6%90%9C%E7%B4%A2/" rel="tag"># 深度优先搜索</a>
+              <a href="/tags/%E5%B9%B6%E6%9F%A5%E9%9B%86/" rel="tag"># 并查集</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2019/08/05/695-%E5%B2%9B%E5%B1%BF%E7%9A%84%E6%9C%80%E5%A4%A7%E9%9D%A2%E7%A7%AF/" rel="prev" title="695-岛屿的最大面积">
+                  <i class="fa fa-angle-left"></i> 695-岛屿的最大面积
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2019/08/05/200-%E5%B2%9B%E5%B1%BF%E6%95%B0%E9%87%8F/" rel="next" title="200-岛屿数量">
+                  200-岛屿数量 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">EiletXie</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">225k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">3:25</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+
+  <a href="https://github.com/EiletXie" class="github-corner" title="在 GitHub 上关注我" aria-label="在 GitHub 上关注我" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

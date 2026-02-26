@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 8.1.1">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/themes/blue/pace-theme-minimal.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.2.4/pace.min.js" integrity="sha256-gqd7YTjg/BtfqWSwsJOvndl0Bxc8gFImLEkXQT8+qj0=" crossorigin="anonymous" defer></script>
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"eiletxie.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"a11y-dark","dark":"a11y-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="​       ​    最近花时间看了一部分的《高性能MySQL》 红宝书，以及 丁奇大佬的 《MySQL实战45讲》，对 MySQL的理解又加深了不少，要保持日常MySQL的高性能，避免犯一些低级错误，需要我们对 MySQL的体系结构、逻辑设计、每个模块都有一定的理解，这里便萌生了写几篇总结的博客的想法。 ​        计划是针对各个重要的模块分别做 知识点总结以及高性能需要注意的点的阐述">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MySQL打怪之路">
+<meta property="og:url" content="https://eiletxie.github.io/2020/11/28/MySQL%E6%89%93%E6%80%AA%E4%B9%8B%E8%B7%AF/index.html">
+<meta property="og:site_name" content="EiletXie Blog">
+<meta property="og:description" content="​       ​    最近花时间看了一部分的《高性能MySQL》 红宝书，以及 丁奇大佬的 《MySQL实战45讲》，对 MySQL的理解又加深了不少，要保持日常MySQL的高性能，避免犯一些低级错误，需要我们对 MySQL的体系结构、逻辑设计、每个模块都有一定的理解，这里便萌生了写几篇总结的博客的想法。 ​        计划是针对各个重要的模块分别做 知识点总结以及高性能需要注意的点的阐述">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://eiletxie.github.io/2020/11/28/MySQL%E6%89%93%E6%80%AA%E4%B9%8B%E8%B7%AF/b1.jpg">
+<meta property="og:image" content="https://eiletxie.github.io/2020/11/28/MySQL%E6%89%93%E6%80%AA%E4%B9%8B%E8%B7%AF/b2.jpg">
+<meta property="og:image" content="https://eiletxie.github.io/2020/11/28/MySQL%E6%89%93%E6%80%AA%E4%B9%8B%E8%B7%AF/b3.jpg">
+<meta property="article:published_time" content="2020-11-28T11:31:01.000Z">
+<meta property="article:modified_time" content="2020-11-28T11:50:57.443Z">
+<meta property="article:author" content="EiletXie">
+<meta property="article:tag" content="MySQL">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://eiletxie.github.io/2020/11/28/MySQL%E6%89%93%E6%80%AA%E4%B9%8B%E8%B7%AF/b1.jpg">
+
+
+<link rel="canonical" href="https://eiletxie.github.io/2020/11/28/MySQL%E6%89%93%E6%80%AA%E4%B9%8B%E8%B7%AF/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://eiletxie.github.io/2020/11/28/MySQL%E6%89%93%E6%80%AA%E4%B9%8B%E8%B7%AF/","path":"2020/11/28/MySQL打怪之路/","title":"MySQL打怪之路"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>MySQL打怪之路 | EiletXie Blog</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.5.0/search.js" integrity="sha256-xFC6PJ82SL9b3WkGjFavNiA9gm5z6UBxWPiu4CYjptg=" crossorigin="anonymous" defer></script>
+<script src="/js/third-party/search/local-search.js" defer></script>
+
+
+
+
+
+  <script src="/js/third-party/pace.js" defer></script>
+
+
+  
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">EiletXie Blog</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">不忘初心 Keep Moving</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+      <div class="search-header">
+        <span class="search-icon">
+          <i class="fa fa-search"></i>
+        </span>
+        <div class="search-input-container">
+          <input autocomplete="off" autocapitalize="off" maxlength="80"
+                placeholder="搜索..." spellcheck="false"
+                type="search" class="search-input">
+        </div>
+        <span class="popup-btn-close" role="button">
+          <i class="fa fa-times-circle"></i>
+        </span>
+      </div>
+      <div class="search-result-container">
+        <div class="search-result-icon">
+          <i class="fa fa-spinner fa-pulse fa-5x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#MySQL%E7%9A%84%E9%80%BB%E8%BE%91%E6%9E%B6%E6%9E%84"><span class="nav-number">1.</span> <span class="nav-text">MySQL的逻辑架构</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AE%A2%E6%88%B7%E7%AB%AF"><span class="nav-number">1.1.</span> <span class="nav-text">客户端</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%89%8D%E6%98%AF%E6%97%A5%E5%B8%B8%E5%BC%80%E9%94%80%E6%9C%80%E5%A4%A7%E7%9A%84%E5%9C%B0%E6%96%B9%EF%BC%9F"><span class="nav-number">2.</span> <span class="nav-text">什么才是日常开销最大的地方？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%82%A3%E4%B9%88MySQL%E6%98%AF%E6%80%8E%E4%B9%88%E8%AE%BE%E8%AE%A1%E6%9D%A5%E5%87%8F%E5%B0%91%E7%A3%81%E7%9B%98%E8%AF%BB%E5%86%99%E7%9A%84%E5%91%A2%EF%BC%9F"><span class="nav-number">2.1.</span> <span class="nav-text">那么MySQL是怎么设计来减少磁盘读写的呢？</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1%E3%80%81%E9%80%9A%E8%BF%87%E7%BC%93%E5%AD%98%E5%91%BD%E4%B8%AD%E6%9D%A5%E5%87%8F%E5%B0%91%E7%A3%81%E7%9B%98%E8%AF%BB"><span class="nav-number">2.1.1.</span> <span class="nav-text">1、通过缓存命中来减少磁盘读</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#2%E3%80%81%E9%80%9A%E8%BF%87change-buffer%E6%9D%A5%E5%87%8F%E5%B0%91%E7%A3%81%E7%9B%98%E5%86%99"><span class="nav-number">2.1.2.</span> <span class="nav-text">2、通过change buffer来减少磁盘写</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B4%A2%E5%BC%95%E5%B0%8F%E7%9F%A5%E8%AF%86"><span class="nav-number">3.</span> <span class="nav-text">索引小知识</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%99%AE%E9%80%9A%E7%B4%A2%E5%BC%95%E5%92%8C%E5%94%AF%E4%B8%80%E7%B4%A2%E5%BC%95%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="nav-number">3.1.</span> <span class="nav-text">普通索引和唯一索引的区别</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Change-Buffer%E7%9A%84%E9%80%82%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="nav-number">3.2.</span> <span class="nav-text">Change Buffer的适用场景</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%8A%A0%E7%B4%A2%E5%BC%95%E6%B3%A8%E6%84%8F%E7%82%B9"><span class="nav-number">3.3.</span> <span class="nav-text">字符串加索引注意点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%89%E5%85%A8%E6%80%A7%E9%97%AE%E9%A2%98"><span class="nav-number">3.4.</span> <span class="nav-text">安全性问题</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="EiletXie"
+      src="/img/header.jpg">
+  <p class="site-author-name" itemprop="name">EiletXie</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">47</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">分类</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">32</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+  <div class="cc-license animated" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" rel="noopener" target="_blank"><img src="https://cdnjs.cloudflare.com/ajax/libs/creativecommons-vocabulary/2020.11.3/assets/license_badges/small/by_nc_sa.svg" alt="Creative Commons"></a>
+  </div>
+
+        </div>
+      </div>
+        <div class="back-to-top animated" role="button" aria-label="返回顶部">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://eiletxie.github.io/2020/11/28/MySQL%E6%89%93%E6%80%AA%E4%B9%8B%E8%B7%AF/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/img/header.jpg">
+      <meta itemprop="name" content="EiletXie">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="EiletXie Blog">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="MySQL打怪之路 | EiletXie Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          MySQL打怪之路
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2020-11-28 19:31:01 / 修改时间：19:50:57" itemprop="dateCreated datePublished" datetime="2020-11-28T19:31:01+08:00">2020-11-28</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93%E4%BC%98%E5%8C%96/" itemprop="url" rel="index"><span itemprop="name">数据库优化</span></a>
+        </span>
+    </span>
+
+  
+    <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">阅读次数：</span>
+      <span id="busuanzi_value_page_pv"></span>
+    </span>
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>4.3k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>4 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>​      </p>
+<p>​    最近花时间看了一部分的《高性能MySQL》 红宝书，以及 丁奇大佬的 《MySQL实战45讲》，对 MySQL的理解又加深了不少，要保持日常MySQL的高性能，避免犯一些低级错误，需要我们对 MySQL的体系结构、逻辑设计、每个模块都有一定的理解，这里便萌生了写几篇总结的博客的想法。</p>
+<p>​        计划是针对各个重要的模块分别做 知识点总结以及高性能需要注意的点的阐述。当前的这篇就做一个全篇的概述吧，针对一个开发日常面对MySQL如何保证整体的高性能，需要注意哪些坑。</p>
+<span id="more"></span> 
+
+<br/>
+
+<p>接下来我最主要概述以下几点</p>
+<ul>
+<li>MySQL的逻辑架构</li>
+<li>什么才是日常开销最大的地方？</li>
+<li>MySQL因此做了哪些措施？</li>
+<li>索引必须了解的知识</li>
+<li>安全性是如何保证的？</li>
+</ul>
+<p>​        MVCC事务多版本控制、索引、日志系统的设计都是很大一块的内容，也是核心，后续我会一一补充上来，这里暂时不做详细说明。</p>
+<br/>
+
+
+
+<h2 id="MySQL的逻辑架构"><a href="#MySQL的逻辑架构" class="headerlink" title="MySQL的逻辑架构"></a>MySQL的逻辑架构</h2><img src="/2020/11/28/MySQL%E6%89%93%E6%80%AA%E4%B9%8B%E8%B7%AF/b1.jpg" class="" title="架构图">
+
+<p>上图是对 一个查询语句在MySQL中需要经历哪些模块</p>
+<p>在MySQL中主要分为两大模块 <strong>Server层和引擎层</strong></p>
+<h4 id="客户端"><a href="#客户端" class="headerlink" title="客户端"></a><strong>客户端</strong></h4><p><strong>Server层（在内存中操作）</strong></p>
+<ul>
+<li>连接器： 用户权限校验</li>
+<li>缓存：对操作语句涉及加载的数据存储在内存中</li>
+<li>分析器： 对sql语句的词法、语法校验</li>
+<li>优化器：sql优化，提供自己认为最佳的执行方式</li>
+<li>执行器：操作执行引擎并返回结果</li>
+</ul>
+<p><strong>引擎层（在磁盘中操作）</strong></p>
+<p>大家知道sql语句会涉及哪些模块，这些模块有哪些用即可，不需要做过深的研究。</p>
+<br/>
+
+<h2 id="什么才是日常开销最大的地方？"><a href="#什么才是日常开销最大的地方？" class="headerlink" title="什么才是日常开销最大的地方？"></a>什么才是日常开销最大的地方？</h2><p>​        在MySQL中单论各模块的执行，什么是开销最大的呢？<strong>是对磁盘的读写，也就是IO开销最大</strong>，首先我们要知道数据是存储在磁盘，而磁盘的数据分布在各个数据页中，页（Page）是 Innodb 存储引擎用于管理数据的最小磁盘单位，一个数据页为 16 K。假设一行数据记录为16字节，那么一个数据页最多可以存放1024条记录（不考虑数据空洞的情况）。</p>
+<p>​        我们必须要明白一点，那就是不管你是用索引(主键索引、普通索引、覆盖索引）还是全表扫描，只要你所需的数据没有在缓存中命中，你就必须去磁盘中加载数据页，把一页数据页里的数据记录加载到内存中进行遍历来找到对应的记录，MySQL的索引通过B+树的结构保证数据能在3次左右的磁盘IO读取便能定位到一条数据所在的磁盘数据页位置。</p>
+<p>​         大家对索引的B+树结构和磁盘数据页不太理解的话，可以看往期的文章 <a target="_blank" rel="noopener" href="http://www.eiletxie.cn/2019/10/07/MySQL%E4%B8%AD%E7%B4%A2%E5%BC%95%E6%A8%A1%E5%9D%97/">MySQL的索引模块</a>，这里不做过多说明。</p>
+<p>​         因此我们日常要注意的和MySQL所要做的都是尽可能的减少 磁盘的读写，在内存中进行操作或者业务的设计来尽量避免大量IO读写数据。</p>
+<br/>
+
+<h3 id="那么MySQL是怎么设计来减少磁盘读写的呢？"><a href="#那么MySQL是怎么设计来减少磁盘读写的呢？" class="headerlink" title="那么MySQL是怎么设计来减少磁盘读写的呢？"></a><strong>那么MySQL是怎么设计来减少磁盘读写的呢？</strong></h3><h5 id="1、通过缓存命中来减少磁盘读"><a href="#1、通过缓存命中来减少磁盘读" class="headerlink" title="1、通过缓存命中来减少磁盘读"></a><strong>1、通过缓存命中来减少磁盘读</strong></h5><p>​       假设表A是在系统的很多业务模块都会被用到，即表A经常要被查询，比如系统配置、用户信息等，难道每次都去数据库查吗？肯定是加载到缓存中，如果缓存中有直接返回结果来减少IO开销的。</p>
+<br/>
+
+<h5 id="2、通过change-buffer来减少磁盘写"><a href="#2、通过change-buffer来减少磁盘写" class="headerlink" title="2、通过change buffer来减少磁盘写"></a><strong>2、通过change buffer来减少磁盘写</strong></h5><p>​      既然可以通过缓存记录数据，减少去磁盘读取，那能不能有一种方式在缓存中记录客户端的更新语句，等到合适的时候再写入到磁盘中，假如这个时候要查询数据，先加载磁盘中的数据到缓存，再将更新语句逻辑merge到对应的数据记录中，然后返回结果。没错，MySQL就有这种东西，叫做change buffer。</p>
+<p>​      这里需要说明change buffer是什么？ （mysql5.5之前只支持记录插入语句，又称为insert buffer,mysql 5.5以后支持更新和删除语句的记录）。</p>
+<p>​      我们看一下MySQL官网5.7版本对于 change buffer的说明</p>
+<img src="/2020/11/28/MySQL%E6%89%93%E6%80%AA%E4%B9%8B%E8%B7%AF/b2.jpg" class="" title="说明">
+
+<br/>
+
+<p>​       change buffer是一种特殊的数据结构，用于在二级索引页不在缓冲池中时将更改缓存到二级索引页（非聚簇索引即非主键索引，这里你直接理解成普通索引和数据页就行，因为我们要更新的就是这些数据）。缓冲的更改（可能由INSERT，UPDATE或DELETE操作（DML）引起）将在以后通过其他读取操作将页面加载到缓冲池中时合并。</p>
+<br/>
+
+<img src="/2020/11/28/MySQL%E6%89%93%E6%80%AA%E4%B9%8B%E8%B7%AF/b3.jpg" class="" title="change buffer">
+
+<p>​      可能你还不能理解，我这里举一个例子，假设 一个用户行为记录分析表，它的数据是经常需要更新的，当用户做了几百次操作，如果没有change buffer，你需要读取一次索引对应磁盘数据页到内存中，更新了再写入到磁盘中，重复上百次。这里你需要明白一个机制（<strong>如果表更改了，那么使用这个表的所有缓存查询将不再有效，查询缓存中值相关条目会被清空，这是为了保证数据的一致性</strong>）</p>
+<p>​       这个时候你就明白change buffer的作用了，它不仅减少了随机的磁盘写，转变成了顺序磁盘写，某种意义上如果是重复数据的更新，也减少了磁盘读。</p>
+ <br/>
+
+<p>细心的读者会发现，光有change buffer是不行的，因为一旦MySQL异常重启，岂不是缓存中的数据会全部丢失?  这就得用到 redo log,如果发生异常的情况，会根据redo log做数据的更新，<strong>那如果 是刚写入change buffer，还没有写入到 redo log的时候挂掉了咋办？</strong></p>
+<p>​     DML语句是会开启事务的，只有redo log成功写入提交后，当前事务才会commit的，如果redo log没写就失败是会直接回滚事务的，又或者服务端挂掉则缓存清空，redo log没有记录到对应更新而已，这种情况需要重头再来，不会导致数据不一致的。</p>
+<br/>
+
+<h2 id="索引小知识"><a href="#索引小知识" class="headerlink" title="索引小知识"></a>索引小知识</h2><p>​      大家都了解，索引就像是书的目录，是为了快速查找数据。它是由B+树的结构，正常的业务在亿级别以下的表，能够做到3次查询即可找到对应的数据页。</p>
+<p>​      但是索引也可能因为你的查询方式，或者一些限制因素从而失效，或者Mysql选错了索引等。</p>
+<p>​      关于查询方式不对导致未使用到的索引的情况有很多，范围查询，类型转换（尤其是很少注意的隐式转换），使用内置函数，复合索引查询条件顺序不对等等。这是一块很大的内容，这篇文章只讲总览，就不针对性的说，大家这方面不太了解的，我推荐可以学习B站上 尚硅谷的Mysql高级篇，那个视频对这块有比较详细的讲述。</p>
+<p>​       我这块说和大家说的是一些平时很少会注意的点。</p>
+<br/>
+
+<h3 id="普通索引和唯一索引的区别"><a href="#普通索引和唯一索引的区别" class="headerlink" title="普通索引和唯一索引的区别"></a><strong>普通索引和唯一索引的区别</strong></h3><p>​        唯一索引要求 数据列组合的值是唯一的，普通索引没有这个要求，这个大家都知道。还有呢？大家有没有想过，这两种索引对DML语句有什么影响吗？</p>
+<p><strong>对SELECT语句来说：</strong></p>
+<p>如果是等值查询，在索引遍历时，找到符合要求的记录后，唯一索引是不需要往下遍历，因为只有一条主键ID，而普通索引可能存在多条，需要继续遍历，直到找到的数据记录不符合要求为止，不过这个对性能几乎没有影响。</p>
+<br/>
+
+<p><strong>对UPDATE、INSERT语句来说：</strong></p>
+<p>​        这就是考察大家的地方，我们前面说过 change buffer。再回顾一下它的作用，把用户的非SELECT的DML语句记录到缓冲池，当读取对应表记录到缓存时，将顺序的把这些DML语句执行更新该记录，然后再写回数据页，大大减少了磁盘读和磁盘写。</p>
+<p>​        如果是唯一索引，能不能将INSERT语句缓存起来，作为change buffer呢？明显不能，为什么？</p>
+<p>​       因为表里面可能已经存在对应的数据，你必须去查表判断唯一性，而普通索引则没这个必要，这就是我们需要注意的区别。</p>
+<p>​        那你此时还有疑问，那为什么UPDATE语句也不能作为change buffer呢？</p>
+<p>​       一样的数据列唯一性问题，唯一索引又不一定非得是主键索引，假设我设置唯一索引列是name,update user set name &#x3D; ‘李四’ where name &#x3D; ‘张三’ ，你必须在更新前去数据库查询索引判断name&#x3D;’李四’存不存在。</p>
+ <br/>
+
+<h3 id="Change-Buffer的适用场景"><a href="#Change-Buffer的适用场景" class="headerlink" title="Change Buffer的适用场景"></a><strong>Change Buffer的适用场景</strong></h3><p>​      change buffer是将更新语句存储在缓冲区中，当执行读取语句时再将对应的更新语句顺序更新，这个操作叫merge，然后刷回磁盘。这种是特别适合写多读少的场景的。</p>
+<p>​       但是如果是读多写少的场景或者是写完马上就要读的场景，这种情况其实是不适合的，将更新先记录在 change buffer，但之后由于马上要访问这个数据页，会立即触发 merge 过程。这样随机访问 IO 的次数不会减少，反而增加了 change buffer 的维护代价。所以，对于这种业务模式来说，change buffer 反而起到了副作用。</p>
+<br/>
+
+<h3 id="字符串加索引注意点"><a href="#字符串加索引注意点" class="headerlink" title="字符串加索引注意点"></a><strong>字符串加索引注意点</strong></h3><p>​       如果你需要给一个邮箱或者是身份证号加索引，你怎么加好呢？索引是有开销的，如果你就按照整个身份证号来存，开销较大，在一些业务场景下，有很多东西是没必要存的。</p>
+<p>​      假设你只需要记录某个县的居民身份证号，那前面的6位是地址码，就不用记录。又例如记录某个公司的用户邮箱 后缀.com是不是可以去除，其实在某些情况下我们如何取字符串作为索引，一个是通过先去除无用的字符，二是通常查询来判断</p>
+<p>​     使用前缀索引，定义好长度，就可以做到既节省空间，又不用额外增加太多的查询成本。</p>
+<p>我们可以截取对应长度的字段来判断区分度</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> </span><br><span class="line">  <span class="built_in">count</span>(<span class="keyword">distinct</span> <span class="keyword">left</span>(email,<span class="number">4</span>)）<span class="keyword">as</span> L4,</span><br><span class="line">  <span class="built_in">count</span>(<span class="keyword">distinct</span> <span class="keyword">left</span>(email,<span class="number">5</span>)）<span class="keyword">as</span> L5,</span><br><span class="line">  <span class="built_in">count</span>(<span class="keyword">distinct</span> <span class="keyword">left</span>(email,<span class="number">6</span>)）<span class="keyword">as</span> L6,</span><br><span class="line">  <span class="built_in">count</span>(<span class="keyword">distinct</span> <span class="keyword">left</span>(email,<span class="number">7</span>)）<span class="keyword">as</span> L7,</span><br><span class="line"><span class="keyword">from</span> <span class="keyword">User</span>;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>当然，使用前缀索引很可能会损失区分度，所以你需要预先设定一个可以接受的损失比例，比如 5%。然后，在返回的 L4~L7 中，找出不小于 L * 95% 的值，假设这里 L6、L7 都满足，你就可以选择前缀长度为 6。</p>
+<p>​      当然你也可以考虑使用其他的方法来保证区分度。</p>
+<br/>
+
+<p><strong>hash对应字段的值作为索引</strong></p>
+<p>​      这种在很多业务上都经常见到，我举一个我公司的例子，假设我要确定相关的记录，没法通过主键id去找，我在业务流的上面中只能获取十几个字段的值，怎么快速找到下面业务流中符合要求的数据呢？ 我们在业务的设计上，在插入记录时新增一个 hash字段，将这十几个字段的值组合成一个字符串然后hash出一个值存储。这样我们在查找时在应用层直接算出hash值就能够根据hash值建的索引进行快速查找，避免了全表扫描。</p>
+<br/>
+
+<p><strong>倒序存储</strong></p>
+<p>​       这种业务上遇到的不多，例如身份证号前面的区分度很低，我们可以倒序的然后查询区分度，选择保留的长度，裁剪字符串，然后再存起来。</p>
+<br/>
+
+<h3 id="安全性问题"><a href="#安全性问题" class="headerlink" title="安全性问题"></a><strong>安全性问题</strong></h3><p>​     安全性问题涉及 主备同步、crash-safe，其实需要了解的还是日志的设计，redo log（重做日志），binlog(归档日志）</p>
+<p>​      redo log在许多应用场景中一般只存储DML语句执行后的结果值，binlog是详细记录了sql语句，通过这两黄金搭档来保证crash-safe和主备同步。后续会单独写一篇博客，一是涉及内容过多，二是我现在也不能说对其完全了解，尤其是其结构设计这块。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>本文作者： </strong>EiletXie
+  </li>
+  <li class="post-copyright-link">
+      <strong>本文链接：</strong>
+      <a href="https://eiletxie.github.io/2020/11/28/MySQL%E6%89%93%E6%80%AA%E4%B9%8B%E8%B7%AF/" title="MySQL打怪之路">https://eiletxie.github.io/2020/11/28/MySQL打怪之路/</a>
+  </li>
+  <li class="post-copyright-license">
+      <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/MySQL/" rel="tag"># MySQL</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2020/10/12/%E4%BB%A3%E7%90%86%E6%A8%A1%E5%BC%8F/" rel="prev" title="代理模式">
+                  <i class="fa fa-angle-left"></i> 代理模式
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2021/01/17/%E4%BC%81%E4%B8%9A%E6%85%A2SQL%E4%BC%98%E5%8C%96%E6%80%BB%E7%BB%93/" rel="next" title="企业慢SQL优化总结">
+                  企业慢SQL优化总结 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">EiletXie</span>
+  </div>
+<div class="wordcount">
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-line"></i>
+    </span>
+    <span title="站点总字数">225k</span>
+  </span>
+  <span class="post-meta-item">
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">3:25</span>
+  </span>
+</div>
+<div class="busuanzi-count">
+    <span class="post-meta-item" id="busuanzi_container_site_uv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+
+  <a href="https://github.com/EiletXie" class="github-corner" title="在 GitHub 上关注我" aria-label="在 GitHub 上关注我" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

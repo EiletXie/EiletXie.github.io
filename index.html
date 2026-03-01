@@ -165,7 +165,7 @@
         <div class="site-overview-wrap sidebar-panel">
           <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image" alt="EiletXie"
-      src="/img/header.jpg">
+      src="/images/header.jpg">
   <p class="site-author-name" itemprop="name">EiletXie</p>
   <div class="site-description" itemprop="description"></div>
 </div>
@@ -173,7 +173,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">47</span>
+          <span class="site-state-item-count">48</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -215,10 +215,123 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://eiletxie.github.io/2026/03/01/openclaw%E5%AE%9E%E8%B7%B5/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/header.jpg">
+      <meta itemprop="name" content="EiletXie">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="EiletXie Blog">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | EiletXie Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2026/03/01/openclaw%E5%AE%9E%E8%B7%B5/" class="post-title-link" itemprop="url">openclaw实践</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2026-03-01 12:22:14 / 修改时间：12:43:55" itemprop="dateCreated datePublished" datetime="2026-03-01T12:22:14+08:00">2026-03-01</time>
+    </span>
+
+  
+    <span class="post-meta-break"></span>
+    <span class="post-meta-item" title="本文字数">
+      <span class="post-meta-item-icon">
+        <i class="far fa-file-word"></i>
+      </span>
+      <span class="post-meta-item-text">本文字数：</span>
+      <span>1k</span>
+    </span>
+    <span class="post-meta-item" title="阅读时长">
+      <span class="post-meta-item-icon">
+        <i class="far fa-clock"></i>
+      </span>
+      <span class="post-meta-item-text">阅读时长 &asymp;</span>
+      <span>1 分钟</span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <h1 id="OpenClaw-实践"><a href="#OpenClaw-实践" class="headerlink" title="OpenClaw 实践"></a>OpenClaw 实践</h1><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>最近 OpenClaw 特别火，刷到几个短视频都在阐述这个类似 AGI 的工具，于是打算本地部署测试一下。</p>
+<p>个人测试下来感觉适合有点说不出来的中庸，比较适合有点钱的普通人来远程处理电脑资料、进行一些基础总结等。</p>
+<p>为什么这么说？你需要经常切换 session，不然加上上下文的传递，我 3、4 次对话就花了 20 万的 Tokens，特别费 token，并且还只是一些简短的任务要求。对模型要求高。如果是做产品，还是用 Cursor 好点。</p>
+<h2 id="测试流程"><a href="#测试流程" class="headerlink" title="测试流程"></a>测试流程</h2><p>整理测试流程如下：</p>
+<ol>
+<li>本地部署 OpenClaw</li>
+<li>对接第三方，这里使用飞书</li>
+<li>进行本地电脑 OpenClaw 测试，和第三方对接测试。</li>
+</ol>
+<h2 id="1-首先是部署-OpenClaw"><a href="#1-首先是部署-OpenClaw" class="headerlink" title="1. 首先是部署 OpenClaw"></a>1. 首先是部署 OpenClaw</h2><p>我这边装的是中文社区版的，跟海外版几乎一致，只是做了一些配置的中文转换而已，方便安装使用。</p>
+<blockquote>
+<p>安装地址：<a target="_blank" rel="noopener" href="https://clawd.org.cn/#install">https://clawd.org.cn/#install</a></p>
+</blockquote>
+<p>我本地是 Windows 10 系统，所以按照要求，在 PowerShell 中执行该命令即可。注意 Node.js 的版本要求是 22 以上。</p>
+<figure class="highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 在 PowerShell 中运行</span></span><br><span class="line"><span class="built_in">iwr</span> <span class="literal">-useb</span> https://clawd.org.cn/install.ps1 | <span class="built_in">iex</span></span><br></pre></td></tr></table></figure>
+
+<p>等几秒即可安装成功。</p>
+
+
+
+<p>接下来就是配置模型、第三方这些。我建议是你第一次玩这个，模型暂时就用 Qwen 的免费模型即可，根据给的链接去注册一下千问的账号就 auth 成功了；其他对接第三方等配置的先跳过，直接一路 enter 启动就行。</p>
+<h3 id="启动问题"><a href="#启动问题" class="headerlink" title="启动问题"></a>启动问题</h3><p>我本地默认安装 OpenClaw 启动失败了，报 1006，查看日志也没具体描述，就是 gateway status 是 error。可能是 Windows 的 bug 或者防火墙的问题，我重新执行 openclaw gateway –port 18789 就可以正常启动。</p>
+<h3 id="openclaw常用命令"><a href="#openclaw常用命令" class="headerlink" title="openclaw常用命令"></a>openclaw常用命令</h3><img src="/2026/03/01/openclaw%E5%AE%9E%E8%B7%B5/%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4.jpg" class="">
+
+<h2 id="2-对接第三方（飞书）"><a href="#2-对接第三方（飞书）" class="headerlink" title="2. 对接第三方（飞书）"></a>2. 对接第三方（飞书）</h2><p>参考 OpenClaw 对接飞书文章： <a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/2626160">https://cloud.tencent.com/developer/article/2626160</a></p>
+<p>飞书对接的目的是通过配置一个飞书 App 的机器人，实现信息传递，本质只是远程调用小龙虾助理干活，将信息返回。</p>
+<p>你将飞书的 App ID 和 Secret Key 配置给 OpenClaw（可以直接在小龙虾的聊天窗口把信息给他，他会自动配置）。</p>
+<p>可以参考上述文章配置飞书机器人，权限可以全部开启作为测试。</p>
+<h2 id="3-测试对接"><a href="#3-测试对接" class="headerlink" title="3. 测试对接"></a>3. 测试对接</h2><p>使用飞书发送消息，要求小龙虾给我搜最新的伊朗新闻，然后截图发送给我。期间我还提示它，由于没开 VPN，不要用 Google 来搜，要用必应。它也会理解处理。</p>
+<img src="/2026/03/01/openclaw%E5%AE%9E%E8%B7%B5/%E9%A3%9E%E4%B9%A6%E6%88%AA%E5%9B%BE1.jpg" class="">
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
     <link itemprop="mainEntityOfPage" href="https://eiletxie.github.io/2026/02/25/%E8%AE%B0%E5%BD%95LangChain%E5%AF%B9%E4%B8%BB%E6%B5%81%E8%A7%86%E9%A2%91%E7%BD%91%E7%AB%99%E7%9A%84%E8%BF%9B%E8%A1%8C%E8%A7%86%E9%A2%91%E6%80%BB%E7%BB%93/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/img/header.jpg">
+      <meta itemprop="image" content="/images/header.jpg">
       <meta itemprop="name" content="EiletXie">
     </span>
 
@@ -311,7 +424,7 @@
     <link itemprop="mainEntityOfPage" href="https://eiletxie.github.io/2022/07/17/Spring-%E9%BB%98%E8%AE%A4%E6%A0%87%E7%AD%BE%E8%A7%A3%E6%9E%90/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/img/header.jpg">
+      <meta itemprop="image" content="/images/header.jpg">
       <meta itemprop="name" content="EiletXie">
     </span>
 
@@ -404,7 +517,7 @@
     <link itemprop="mainEntityOfPage" href="https://eiletxie.github.io/2022/06/26/Spring%E6%BA%90%E7%A0%81%E7%B3%BB%E5%88%97-Spring%E5%AE%B9%E5%99%A8%E7%9A%84%E5%9F%BA%E6%9C%AC%E5%AE%9E%E7%8E%B0/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/img/header.jpg">
+      <meta itemprop="image" content="/images/header.jpg">
       <meta itemprop="name" content="EiletXie">
     </span>
 
@@ -497,7 +610,7 @@
     <link itemprop="mainEntityOfPage" href="https://eiletxie.github.io/2021/12/06/RocketMQ%E7%B3%BB%E5%88%97-%E4%BA%8B%E5%8A%A1%E6%B6%88%E6%81%AF%E4%B8%8E%E6%B6%88%E6%81%AF%E5%AD%98%E5%82%A8/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/img/header.jpg">
+      <meta itemprop="image" content="/images/header.jpg">
       <meta itemprop="name" content="EiletXie">
     </span>
 
@@ -595,7 +708,7 @@
     <link itemprop="mainEntityOfPage" href="https://eiletxie.github.io/2021/11/19/RocketMQ%E7%B3%BB%E5%88%97-%E6%9E%B6%E6%9E%84%E5%88%9D%E6%8E%A2/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/img/header.jpg">
+      <meta itemprop="image" content="/images/header.jpg">
       <meta itemprop="name" content="EiletXie">
     </span>
 
@@ -691,7 +804,7 @@
     <link itemprop="mainEntityOfPage" href="https://eiletxie.github.io/2021/09/05/Redis%E8%AE%BE%E8%AE%A1-%E5%AD%97%E7%AC%A6%E4%B8%B2%E3%80%81%E5%88%97%E8%A1%A8%E3%80%81%E5%AD%97%E5%85%B8/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/img/header.jpg">
+      <meta itemprop="image" content="/images/header.jpg">
       <meta itemprop="name" content="EiletXie">
     </span>
 
@@ -792,7 +905,7 @@
     <link itemprop="mainEntityOfPage" href="https://eiletxie.github.io/2021/06/06/Redis%E8%AE%BE%E8%AE%A1-%E8%B7%B3%E8%B7%83%E8%A1%A8%E3%80%81%E6%95%B4%E6%95%B0%E9%9B%86%E5%90%88%E3%80%81%E5%8E%8B%E7%BC%A9%E5%88%97%E8%A1%A8/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/img/header.jpg">
+      <meta itemprop="image" content="/images/header.jpg">
       <meta itemprop="name" content="EiletXie">
     </span>
 
@@ -885,7 +998,7 @@
     <link itemprop="mainEntityOfPage" href="https://eiletxie.github.io/2021/04/18/Redis-%E6%BC%8F%E6%96%97%E9%99%90%E6%B5%81/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/img/header.jpg">
+      <meta itemprop="image" content="/images/header.jpg">
       <meta itemprop="name" content="EiletXie">
     </span>
 
@@ -984,7 +1097,7 @@
     <link itemprop="mainEntityOfPage" href="https://eiletxie.github.io/2021/03/14/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E4%B9%8B%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/img/header.jpg">
+      <meta itemprop="image" content="/images/header.jpg">
       <meta itemprop="name" content="EiletXie">
     </span>
 
@@ -1075,106 +1188,6 @@
 
 
 
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://eiletxie.github.io/2021/01/17/%E4%BC%81%E4%B8%9A%E6%85%A2SQL%E4%BC%98%E5%8C%96%E6%80%BB%E7%BB%93/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/img/header.jpg">
-      <meta itemprop="name" content="EiletXie">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="EiletXie Blog">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | EiletXie Blog">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2021/01/17/%E4%BC%81%E4%B8%9A%E6%85%A2SQL%E4%BC%98%E5%8C%96%E6%80%BB%E7%BB%93/" class="post-title-link" itemprop="url">企业慢SQL优化总结</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2021-01-17 22:19:57" itemprop="dateCreated datePublished" datetime="2021-01-17T22:19:57+08:00">2021-01-17</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2021-01-20 21:21:11" itemprop="dateModified" datetime="2021-01-20T21:21:11+08:00">2021-01-20</time>
-    </span>
-
-  
-    <span class="post-meta-break"></span>
-    <span class="post-meta-item" title="本文字数">
-      <span class="post-meta-item-icon">
-        <i class="far fa-file-word"></i>
-      </span>
-      <span class="post-meta-item-text">本文字数：</span>
-      <span>4.9k</span>
-    </span>
-    <span class="post-meta-item" title="阅读时长">
-      <span class="post-meta-item-icon">
-        <i class="far fa-clock"></i>
-      </span>
-      <span class="post-meta-item-text">阅读时长 &asymp;</span>
-      <span>4 分钟</span>
-    </span>
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <blockquote>
-<p>前言： 最近由于组内大佬出差，我临时顶替来处理我们项目组修复慢SQL缺陷的任务，抱着头大和觉得能学到东西快乐的心情弄了2周，有一些总结和心得在此记录一下。</p>
-</blockquote>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2021/01/17/%E4%BC%81%E4%B8%9A%E6%85%A2SQL%E4%BC%98%E5%8C%96%E6%80%BB%E7%BB%93/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
   <nav class="pagination">
     <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><a class="extend next" rel="next" title="下一页" aria-label="下一页" href="/page/2/"><i class="fa fa-angle-right"></i></a>
   </nav>
@@ -1198,13 +1211,13 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-line"></i>
     </span>
-    <span title="站点总字数">225k</span>
+    <span title="站点总字数">226k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">3:25</span>
+    <span title="站点阅读时长">3:26</span>
   </span>
 </div>
 <div class="busuanzi-count">

@@ -4861,4 +4861,41 @@
         <tag>agent</tag>
       </tags>
   </entry>
+  <entry>
+    <title>openclaw实践</title>
+    <url>/2026/03/01/openclaw%E5%AE%9E%E8%B7%B5/</url>
+    <content><![CDATA[<h1 id="OpenClaw-实践"><a href="#OpenClaw-实践" class="headerlink" title="OpenClaw 实践"></a>OpenClaw 实践</h1><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>最近 OpenClaw 特别火，刷到几个短视频都在阐述这个类似 AGI 的工具，于是打算本地部署测试一下。</p>
+<p>个人测试下来感觉适合有点说不出来的中庸，比较适合有点钱的普通人来远程处理电脑资料、进行一些基础总结等。</p>
+<p>为什么这么说？你需要经常切换 session，不然加上上下文的传递，我 3、4 次对话就花了 20 万的 Tokens，特别费 token，并且还只是一些简短的任务要求。对模型要求高。如果是做产品，还是用 Cursor 好点。</p>
+<h2 id="测试流程"><a href="#测试流程" class="headerlink" title="测试流程"></a>测试流程</h2><p>整理测试流程如下：</p>
+<ol>
+<li>本地部署 OpenClaw</li>
+<li>对接第三方，这里使用飞书</li>
+<li>进行本地电脑 OpenClaw 测试，和第三方对接测试。</li>
+</ol>
+<h2 id="1-首先是部署-OpenClaw"><a href="#1-首先是部署-OpenClaw" class="headerlink" title="1. 首先是部署 OpenClaw"></a>1. 首先是部署 OpenClaw</h2><p>我这边装的是中文社区版的，跟海外版几乎一致，只是做了一些配置的中文转换而已，方便安装使用。</p>
+<blockquote>
+<p>安装地址：<a href="https://clawd.org.cn/#install">https://clawd.org.cn/#install</a></p>
+</blockquote>
+<p>我本地是 Windows 10 系统，所以按照要求，在 PowerShell 中执行该命令即可。注意 Node.js 的版本要求是 22 以上。</p>
+<figure class="highlight powershell"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 在 PowerShell 中运行</span></span><br><span class="line"><span class="built_in">iwr</span> <span class="literal">-useb</span> https://clawd.org.cn/install.ps1 | <span class="built_in">iex</span></span><br></pre></td></tr></table></figure>
+
+<p>等几秒即可安装成功。</p>
+
+
+
+<p>接下来就是配置模型、第三方这些。我建议是你第一次玩这个，模型暂时就用 Qwen 的免费模型即可，根据给的链接去注册一下千问的账号就 auth 成功了；其他对接第三方等配置的先跳过，直接一路 enter 启动就行。</p>
+<h3 id="启动问题"><a href="#启动问题" class="headerlink" title="启动问题"></a>启动问题</h3><p>我本地默认安装 OpenClaw 启动失败了，报 1006，查看日志也没具体描述，就是 gateway status 是 error。可能是 Windows 的 bug 或者防火墙的问题，我重新执行 openclaw gateway –port 18789 就可以正常启动。</p>
+<h3 id="openclaw常用命令"><a href="#openclaw常用命令" class="headerlink" title="openclaw常用命令"></a>openclaw常用命令</h3><img src="/2026/03/01/openclaw%E5%AE%9E%E8%B7%B5/%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4.jpg" class="">
+
+<h2 id="2-对接第三方（飞书）"><a href="#2-对接第三方（飞书）" class="headerlink" title="2. 对接第三方（飞书）"></a>2. 对接第三方（飞书）</h2><p>参考 OpenClaw 对接飞书文章： <a href="https://cloud.tencent.com/developer/article/2626160">https://cloud.tencent.com/developer/article/2626160</a></p>
+<p>飞书对接的目的是通过配置一个飞书 App 的机器人，实现信息传递，本质只是远程调用小龙虾助理干活，将信息返回。</p>
+<p>你将飞书的 App ID 和 Secret Key 配置给 OpenClaw（可以直接在小龙虾的聊天窗口把信息给他，他会自动配置）。</p>
+<p>可以参考上述文章配置飞书机器人，权限可以全部开启作为测试。</p>
+<h2 id="3-测试对接"><a href="#3-测试对接" class="headerlink" title="3. 测试对接"></a>3. 测试对接</h2><p>使用飞书发送消息，要求小龙虾给我搜最新的伊朗新闻，然后截图发送给我。期间我还提示它，由于没开 VPN，不要用 Google 来搜，要用必应。它也会理解处理。</p>
+<img src="/2026/03/01/openclaw%E5%AE%9E%E8%B7%B5/%E9%A3%9E%E4%B9%A6%E6%88%AA%E5%9B%BE1.jpg" class="">]]></content>
+      <tags>
+        <tag>agent</tag>
+      </tags>
+  </entry>
 </search>

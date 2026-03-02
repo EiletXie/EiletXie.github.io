@@ -22,17 +22,17 @@
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"eiletxie.github.io","root":"/","images":"/images","scheme":"Gemini","darkmode":true,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"post","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"a11y-dark","dark":"a11y-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":true,"style":"flat"},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js" defer></script>
 
-    <meta name="description" content="OpenClaw 实践前言最近 OpenClaw 特别火，刷到几个短视频都在阐述这个类似 AGI 的工具，于是打算本地部署测试一下。 个人测试下来感觉适合有点说不出来的中庸，比较适合有点钱的普通人来远程处理电脑资料、进行一些基础总结等。 为什么这么说？你需要经常切换 session，不然加上上下文的传递，我 3、4 次对话就花了 20 万的 Tokens，特别费 token，并且还只是一些简短的任">
+    <meta name="description" content="前言最近 OpenClaw 特别火，刷到几个短视频都在阐述这个类似 AGI 的工具，于是打算本地部署测试一下。 个人测试下来感觉适合有点说不出来的中庸，比较适合有点钱的普通人来远程处理电脑资料、进行一些基础总结等。 为什么这么说？你需要经常切换 session，不然加上上下文的传递，我 3、4 次对话就花了 20 万的 Tokens，特别费 token，并且还只是一些简短的任务要求。对模型要求高。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="openclaw实践">
 <meta property="og:url" content="https://eiletxie.github.io/2026/03/01/openclaw%E5%AE%9E%E8%B7%B5/index.html">
 <meta property="og:site_name" content="EiletXie Blog">
-<meta property="og:description" content="OpenClaw 实践前言最近 OpenClaw 特别火，刷到几个短视频都在阐述这个类似 AGI 的工具，于是打算本地部署测试一下。 个人测试下来感觉适合有点说不出来的中庸，比较适合有点钱的普通人来远程处理电脑资料、进行一些基础总结等。 为什么这么说？你需要经常切换 session，不然加上上下文的传递，我 3、4 次对话就花了 20 万的 Tokens，特别费 token，并且还只是一些简短的任">
+<meta property="og:description" content="前言最近 OpenClaw 特别火，刷到几个短视频都在阐述这个类似 AGI 的工具，于是打算本地部署测试一下。 个人测试下来感觉适合有点说不出来的中庸，比较适合有点钱的普通人来远程处理电脑资料、进行一些基础总结等。 为什么这么说？你需要经常切换 session，不然加上上下文的传递，我 3、4 次对话就花了 20 万的 Tokens，特别费 token，并且还只是一些简短的任务要求。对模型要求高。">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://eiletxie.github.io/2026/03/01/openclaw%E5%AE%9E%E8%B7%B5/%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4.jpg">
 <meta property="og:image" content="https://eiletxie.github.io/2026/03/01/openclaw%E5%AE%9E%E8%B7%B5/%E9%A3%9E%E4%B9%A6%E6%88%AA%E5%9B%BE1.jpg">
 <meta property="article:published_time" content="2026-03-01T04:22:14.000Z">
-<meta property="article:modified_time" content="2026-03-01T04:43:55.284Z">
+<meta property="article:modified_time" content="2026-03-01T04:45:55.846Z">
 <meta property="article:author" content="EiletXie">
 <meta property="article:tag" content="agent">
 <meta name="twitter:card" content="summary">
@@ -166,7 +166,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#OpenClaw-%E5%AE%9E%E8%B7%B5"><span class="nav-number">1.</span> <span class="nav-text">OpenClaw 实践</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B5%8B%E8%AF%95%E6%B5%81%E7%A8%8B"><span class="nav-number">1.2.</span> <span class="nav-text">测试流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E9%A6%96%E5%85%88%E6%98%AF%E9%83%A8%E7%BD%B2-OpenClaw"><span class="nav-number">1.3.</span> <span class="nav-text">1. 首先是部署 OpenClaw</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8%E9%97%AE%E9%A2%98"><span class="nav-number">1.3.1.</span> <span class="nav-text">启动问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#openclaw%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4"><span class="nav-number">1.3.2.</span> <span class="nav-text">openclaw常用命令</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E5%AF%B9%E6%8E%A5%E7%AC%AC%E4%B8%89%E6%96%B9%EF%BC%88%E9%A3%9E%E4%B9%A6%EF%BC%89"><span class="nav-number">1.4.</span> <span class="nav-text">2. 对接第三方（飞书）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E6%B5%8B%E8%AF%95%E5%AF%B9%E6%8E%A5"><span class="nav-number">1.5.</span> <span class="nav-text">3. 测试对接</span></a></li></ol></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B5%8B%E8%AF%95%E6%B5%81%E7%A8%8B"><span class="nav-number">2.</span> <span class="nav-text">测试流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E9%A6%96%E5%85%88%E6%98%AF%E9%83%A8%E7%BD%B2-OpenClaw"><span class="nav-number">3.</span> <span class="nav-text">1. 首先是部署 OpenClaw</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8%E9%97%AE%E9%A2%98"><span class="nav-number">3.1.</span> <span class="nav-text">启动问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#openclaw%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4"><span class="nav-number">3.2.</span> <span class="nav-text">openclaw常用命令</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E5%AF%B9%E6%8E%A5%E7%AC%AC%E4%B8%89%E6%96%B9%EF%BC%88%E9%A3%9E%E4%B9%A6%EF%BC%89"><span class="nav-number">4.</span> <span class="nav-text">2. 对接第三方（飞书）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E6%B5%8B%E8%AF%95%E5%AF%B9%E6%8E%A5"><span class="nav-number">5.</span> <span class="nav-text">3. 测试对接</span></a></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -181,7 +181,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">48</span>
+          <span class="site-state-item-count">49</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -254,7 +254,7 @@
       <span class="post-meta-item-text">发表于</span>
       
 
-      <time title="创建时间：2026-03-01 12:22:14 / 修改时间：12:43:55" itemprop="dateCreated datePublished" datetime="2026-03-01T12:22:14+08:00">2026-03-01</time>
+      <time title="创建时间：2026-03-01 12:22:14 / 修改时间：12:45:55" itemprop="dateCreated datePublished" datetime="2026-03-01T12:22:14+08:00">2026-03-01</time>
     </span>
 
   
@@ -288,9 +288,11 @@
     
     
     
-    <div class="post-body" itemprop="articleBody"><h1 id="OpenClaw-实践"><a href="#OpenClaw-实践" class="headerlink" title="OpenClaw 实践"></a>OpenClaw 实践</h1><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>最近 OpenClaw 特别火，刷到几个短视频都在阐述这个类似 AGI 的工具，于是打算本地部署测试一下。</p>
+    <div class="post-body" itemprop="articleBody"><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>最近 OpenClaw 特别火，刷到几个短视频都在阐述这个类似 AGI 的工具，于是打算本地部署测试一下。</p>
 <p>个人测试下来感觉适合有点说不出来的中庸，比较适合有点钱的普通人来远程处理电脑资料、进行一些基础总结等。</p>
 <p>为什么这么说？你需要经常切换 session，不然加上上下文的传递，我 3、4 次对话就花了 20 万的 Tokens，特别费 token，并且还只是一些简短的任务要求。对模型要求高。如果是做产品，还是用 Cursor 好点。</p>
+<span id="more"></span>
+
 <h2 id="测试流程"><a href="#测试流程" class="headerlink" title="测试流程"></a>测试流程</h2><p>整理测试流程如下：</p>
 <ol>
 <li>本地部署 OpenClaw</li>
@@ -355,6 +357,9 @@
                 </a>
             </div>
             <div class="post-nav-item">
+                <a href="/2026/03/01/LLM%E4%B9%8B%E6%96%87%E6%A1%A3%E5%88%86%E5%9D%97/" rel="next" title="LLM之文档分块">
+                  LLM之文档分块 <i class="fa fa-angle-right"></i>
+                </a>
             </div>
           </div>
     </footer>
@@ -385,13 +390,13 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-line"></i>
     </span>
-    <span title="站点总字数">226k</span>
+    <span title="站点总字数">229k</span>
   </span>
   <span class="post-meta-item">
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">3:26</span>
+    <span title="站点阅读时长">3:28</span>
   </span>
 </div>
 <div class="busuanzi-count">

@@ -4864,9 +4864,11 @@
   <entry>
     <title>openclaw实践</title>
     <url>/2026/03/01/openclaw%E5%AE%9E%E8%B7%B5/</url>
-    <content><![CDATA[<h1 id="OpenClaw-实践"><a href="#OpenClaw-实践" class="headerlink" title="OpenClaw 实践"></a>OpenClaw 实践</h1><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>最近 OpenClaw 特别火，刷到几个短视频都在阐述这个类似 AGI 的工具，于是打算本地部署测试一下。</p>
+    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>最近 OpenClaw 特别火，刷到几个短视频都在阐述这个类似 AGI 的工具，于是打算本地部署测试一下。</p>
 <p>个人测试下来感觉适合有点说不出来的中庸，比较适合有点钱的普通人来远程处理电脑资料、进行一些基础总结等。</p>
 <p>为什么这么说？你需要经常切换 session，不然加上上下文的传递，我 3、4 次对话就花了 20 万的 Tokens，特别费 token，并且还只是一些简短的任务要求。对模型要求高。如果是做产品，还是用 Cursor 好点。</p>
+<span id="more"></span>
+
 <h2 id="测试流程"><a href="#测试流程" class="headerlink" title="测试流程"></a>测试流程</h2><p>整理测试流程如下：</p>
 <ol>
 <li>本地部署 OpenClaw</li>
@@ -4897,5 +4899,218 @@
       <tags>
         <tag>agent</tag>
       </tags>
+  </entry>
+  <entry>
+    <title>LLM之文档分块</title>
+    <url>/2026/03/01/LLM%E4%B9%8B%E6%96%87%E6%A1%A3%E5%88%86%E5%9D%97/</url>
+    <content><![CDATA[<h1 id="LLM之文档分块"><a href="#LLM之文档分块" class="headerlink" title="LLM之文档分块"></a>LLM之文档分块</h1><p>前言：为了具体了解向量文档库的运行机制和文档分块的原理，我本地搭建了一个轻量的向量文档库进行测试和学习，可正常运行实现基础的所有核心功能。放在github上。需要的可拿去。 <a href="https://github.com/EiletXie/FileChunk">https://github.com/EiletXie/FileChunk</a></p>
+<span id="more"></span>
+<img src="/2026/03/01/LLM%E4%B9%8B%E6%96%87%E6%A1%A3%E5%88%86%E5%9D%97/home.png" class="" title="主页">
+
+
+<h2 id="1、什么是文档分块"><a href="#1、什么是文档分块" class="headerlink" title="1、什么是文档分块"></a>1、什么是文档分块</h2><p>文档分块（Text Chunking）是构建大模型知识库（如 RAG 系统）的核心预处理步骤，其<strong>根本目标</strong>是：将长文档切分为语义完整、长度适中、利于检索与生成的文本片段（chunks），在保留上下文信息的同时适配模型输入限制。</p>
+<h2 id="2、为什么要文档分块"><a href="#2、为什么要文档分块" class="headerlink" title="2、为什么要文档分块"></a>2、为什么要文档分块</h2><p>因为大模型存在限制因素：</p>
+<table>
+<thead>
+<tr>
+<th align="left">模型上下文窗口有限</th>
+<th align="left">Qwen-Max 最多支持约 32k tokens，无法一次性处理整本书或长报告</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">向量检索需合理粒度</td>
+<td align="left">chunk 太大 → 检索噪声多；chunk 太小 → 丢失关键上下文</td>
+</tr>
+<tr>
+<td align="left">成本与效率平衡</td>
+<td align="left">过长的 prompt 增加 token 消耗和推理延迟</td>
+</tr>
+</tbody></table>
+<p>分块的本质： 在“语义完整性”与“技术可行性”之间找最优解</p>
+<h2 id="3、文档分块的原理"><a href="#3、文档分块的原理" class="headerlink" title="3、文档分块的原理"></a>3、文档分块的原理</h2><h3 id="3-1-尊重自然语言结构"><a href="#3-1-尊重自然语言结构" class="headerlink" title="3.1 尊重自然语言结构"></a>3.1 尊重自然语言结构</h3><p>人类写作具有层级结构：文档 → 章节 → 段落 → 句子 → 词语<br>强制在段落&#x2F;句子边界切割，比随机截断更保留语义</p>
+<h3 id="3-2-递归回退分割（Recursive-Splitting）"><a href="#3-2-递归回退分割（Recursive-Splitting）" class="headerlink" title="3.2 递归回退分割（Recursive Splitting）"></a>3.2 递归回退分割（Recursive Splitting）</h3><p>主流算法（如 LangChain 的 RecursiveCharacterTextSplitter ）采用多级分隔符策略：<br><code>separators = [&quot;\n\n&quot;, &quot;\n&quot;, &quot;。&quot;, &quot;！&quot;, &quot;？&quot;, &quot;；&quot;, &quot; &quot;, &quot;&quot;]</code></p>
+<p><strong>工作流程</strong> ：</p>
+<ul>
+<li>优先用最强分隔符（如 <code>\n\n</code> 段落）分割</li>
+<li>若某段仍超长 → 降级用次强分隔符（如 <code>\n</code> ）</li>
+<li>逐级回退直至满足长度要求</li>
+<li>相邻块设置重叠（Overlap）防止边界信息丢失</li>
+</ul>
+<h3 id="3-3-重叠机制（Overlap）"><a href="#3-3-重叠机制（Overlap）" class="headerlink" title="3.3 重叠机制（Overlap）"></a>3.3 重叠机制（Overlap）</h3><p><strong>作用</strong> ：避免关键信息恰好位于 chunk 边界被切断<br><strong>典型值</strong> ：50–200 字符（或 50–100 tokens）</p>
+<p><strong>示例</strong> ：<br>Chunk 1: [A][B][C]<br>Chunk 2: [B][C][D] ← B&#x2F;C 为重叠部分</p>
+<h2 id="🧩-模块一：文本预处理-——-为分块做准备"><a href="#🧩-模块一：文本预处理-——-为分块做准备" class="headerlink" title="🧩 模块一：文本预处理 —— 为分块做准备"></a>🧩 模块一：文本预处理 —— 为分块做准备</h2><h3 id="1-1-文档解析（Parsing）"><a href="#1-1-文档解析（Parsing）" class="headerlink" title="1.1 文档解析（Parsing）"></a>1.1 文档解析（Parsing）</h3><p>不同格式需不同解析器：</p>
+<table>
+<thead>
+<tr>
+<th align="left">格式</th>
+<th align="left">推荐工具</th>
+<th align="left">注意事项</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">PDF（文字版）</td>
+<td align="left"><code>pdfplumber</code>, <code>PyPDF2</code></td>
+<td align="left">保留段落结构，避免乱码</td>
+</tr>
+<tr>
+<td align="left">PDF（扫描版）</td>
+<td align="left">阿里云 OCR &#x2F; Tesseract + Layout Analysis</td>
+<td align="left">需识别标题、段落、表格位置</td>
+</tr>
+<tr>
+<td align="left">Word&#x2F;PPT</td>
+<td align="left"><code>python-docx</code>, <code>unstructured</code></td>
+<td align="left">提取正文，忽略页眉页脚</td>
+</tr>
+<tr>
+<td align="left">HTML&#x2F;Markdown</td>
+<td align="left"><code>BeautifulSoup</code>, <code>markdown</code></td>
+<td align="left">去除 script&#x2F;style，保留语义标签</td>
+</tr>
+<tr>
+<td align="left">网页</td>
+<td align="left"><code>Playwright</code> + <code>Readability.js</code></td>
+<td align="left">清洗广告、导航栏</td>
+</tr>
+</tbody></table>
+<p>✅ <strong>关键目标</strong> ：输出 <strong>纯文本 + 保留原始结构信息</strong> （如 <code>\n\n</code> 表示段落）</p>
+<h2 id="主流分块策略对比："><a href="#主流分块策略对比：" class="headerlink" title="主流分块策略对比："></a>主流分块策略对比：</h2><table>
+<thead>
+<tr>
+<th align="left">策略</th>
+<th align="left">原理</th>
+<th align="left">优点</th>
+<th align="left">缺点</th>
+<th align="left">适用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">固定长度分块</td>
+<td align="left">按字符&#x2F;token 数硬切</td>
+<td align="left">实现简单，长度可控</td>
+<td align="left">易切断句子，语义断裂</td>
+<td align="left">日志、代码、结构化文本</td>
+</tr>
+<tr>
+<td align="left">按段落分块</td>
+<td align="left">以空行&#x2F;标题为界</td>
+<td align="left">保留自然语义单元</td>
+<td align="left">段落长度不均，可能超限</td>
+<td align="left">小说、新闻、散文</td>
+</tr>
+<tr>
+<td align="left">递归分块（推荐）</td>
+<td align="left">多级分隔符+回退</td>
+<td align="left">平衡语义与长度</td>
+<td align="left">需调参</td>
+<td align="left">通用首选</td>
+</tr>
+<tr>
+<td align="left">语义分块</td>
+<td align="left">用 Embedding 计算句子相似度，在语义断点切割</td>
+<td align="left">最符合人类理解</td>
+<td align="left">速度慢，依赖额外模型</td>
+<td align="left">法律文书、学术论文</td>
+</tr>
+<tr>
+<td align="left">基于元数据分块</td>
+<td align="left">按文档结构（H1&#x2F;H2标题、表格）划分</td>
+<td align="left">结构清晰，可溯源</td>
+<td align="left">依赖格式规范</td>
+<td align="left">技术手册、API文档</td>
+</tr>
+</tbody></table>
+<h3 id="3-2-经验法则（基于任务类型）"><a href="#3-2-经验法则（基于任务类型）" class="headerlink" title="3.2 经验法则（基于任务类型）"></a>3.2 经验法则（基于任务类型）</h3><table>
+<thead>
+<tr>
+<th align="left">任务类型</th>
+<th align="left">推荐 chunk_size (tokens)</th>
+<th align="left">说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">事实问答（FAQ）</td>
+<td align="left">150–300</td>
+<td align="left">一问一答简短</td>
+</tr>
+<tr>
+<td align="left">技术文档查询</td>
+<td align="left">300–500</td>
+<td align="left">需包含完整函数说明或参数表</td>
+</tr>
+<tr>
+<td align="left">法律条款检索</td>
+<td align="left">400–700</td>
+<td align="left">条款常跨多段</td>
+</tr>
+<tr>
+<td align="left">小说&#x2F;散文阅读</td>
+<td align="left">500–800</td>
+<td align="left">允许叙事连贯性</td>
+</tr>
+<tr>
+<td align="left">表格&#x2F;代码块</td>
+<td align="left">按结构整体保留</td>
+<td align="left">不要拆分</td>
+</tr>
+</tbody></table>
+<h3 id="3-3-动态测试法（推荐）"><a href="#3-3-动态测试法（推荐）" class="headerlink" title="3.3 动态测试法（推荐）"></a>3.3 动态测试法（推荐）</h3><ol>
+<li>准备 10–20 个典型用户问题</li>
+<li>用不同 chunk_size（如 256, 512, 768, 1024）构建知识库</li>
+<li>对每个问题：检索 Top-3 chunks</li>
+<li>人工评估： 是否包含完整答案所需信息？</li>
+<li>选择 <strong>召回率最高且 token 消耗最低</strong> 的配置</li>
+</ol>
+<p>📊 <strong>示例结果</strong>：</p>
+<ul>
+<li><code>chunk_size=256</code> → 60% 问题信息不全</li>
+<li><code>chunk_size=512</code> → 90% 完整，平均 token&#x3D;480</li>
+<li><code>chunk_size=1024</code> → 95% 完整，但 token 翻倍 → <strong>选 512</strong></li>
+</ul>
+<h2 id="🔄-模块四：重叠（Overlap）机制详解"><a href="#🔄-模块四：重叠（Overlap）机制详解" class="headerlink" title="🔄 模块四：重叠（Overlap）机制详解"></a>🔄 模块四：重叠（Overlap）机制详解</h2><h3 id="4-1-为什么需要-overlap？"><a href="#4-1-为什么需要-overlap？" class="headerlink" title="4.1 为什么需要 overlap？"></a>4.1 为什么需要 overlap？</h3><p>防止关键实体在边界丢失</p>
+<blockquote>
+<p>例：<br>Chunk 1: “张三毕业于清华大学，主修…”<br>Chunk 2: “…计算机科学与技术专业。”<br>若问题“张三的专业？”，仅 Chunk 2 无法回答</p>
+</blockquote>
+<h3 id="4-2-overlap-大小选择"><a href="#4-2-overlap-大小选择" class="headerlink" title="4.2 overlap 大小选择"></a>4.2 overlap 大小选择</h3><table>
+<thead>
+<tr>
+<th align="left">chunk_size</th>
+<th align="left">推荐 overlap</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">≤ 300</td>
+<td align="left">30–50 tokens</td>
+</tr>
+<tr>
+<td align="left">300–600</td>
+<td align="left">50–100 tokens</td>
+</tr>
+<tr>
+<td align="left">≥ 600</td>
+<td align="left">100–150 tokens</td>
+</tr>
+</tbody></table>
+<p>⚠️ <strong>注意</strong> ：overlap 会增加存储量和检索计算量，需权衡</p>
+<h3 id="4-3-实现技巧（避免重复存储）"><a href="#4-3-实现技巧（避免重复存储）" class="headerlink" title="4.3 实现技巧（避免重复存储）"></a>4.3 实现技巧（避免重复存储）</h3><ul>
+<li><strong>存储时</strong> ：每个 chunk 独立保存（含 overlap 内容）</li>
+<li><strong>检索时</strong> ：正常返回重叠 chunk</li>
+<li><strong>生成时</strong> ：大模型自动去重（因上下文连贯）</li>
+</ul>
+<h2 id="模块五：分块后的存储与索引"><a href="#模块五：分块后的存储与索引" class="headerlink" title="模块五：分块后的存储与索引"></a>模块五：分块后的存储与索引</h2><h3 id="5-1-存储结构（以-Chroma-为例）"><a href="#5-1-存储结构（以-Chroma-为例）" class="headerlink" title="5.1 存储结构（以 Chroma 为例）"></a>5.1 存储结构（以 Chroma 为例）</h3><p>每个 chunk 存为一条记录：</p>
+<pre><code class="language-json">&#123;
+  &quot;id&quot;: &quot;doc1_chunk3&quot;,
+  &quot;embedding&quot;: [0.23, -0.45, ..., 0.89], // 1024维向量
+  &quot;document&quot;: &quot;这里是完整的chunk文本...&quot;,
+  &quot;metadata&quot;: &#123;
+    &quot;source&quot;: &quot;manual_v2.pdf&quot;,
+    &quot;page&quot;: 15,
+    &quot;chunk_index&quot;: 3,
+    &quot;start_char&quot;: 1200,
+    &quot;end_char&quot;: 1700
+  &#125;
+&#125;
+</code></pre>
+]]></content>
   </entry>
 </search>

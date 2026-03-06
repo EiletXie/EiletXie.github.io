@@ -5244,4 +5244,264 @@
         <tag>ThreadLocal</tag>
       </tags>
   </entry>
+  <entry>
+    <title>SKILL,MCP,Function Call概述</title>
+    <url>/2026/03/06/SKILL-MCP-Function-Call%E6%A6%82%E8%BF%B0/</url>
+    <content><![CDATA[<h1 id="概念描述"><a href="#概念描述" class="headerlink" title="概念描述"></a>概念描述</h1><h2 id="Function-Call"><a href="#Function-Call" class="headerlink" title="Function Call"></a>Function Call</h2><p>首先说最简单的Fuction Call,它是大模型推理阶段发出的一次指令，本质是一个结构化文本输出（例如JSON），对开发者和大模型都可见。例如开发者提供了一个查询天气的函数get_weather.当用户的prompt中有查询某地例如北京的天气等词组。则大模型推理阶段就会自动理解然后发出 get_weather所需的结构化文本(<code>{ &quot;name&quot;: &quot;get_weather&quot;, &quot;arguments&quot;: { &quot;city&quot;: &quot;Beijing&quot; } }</code>)给后台依赖，让它去调用对应的API，从而获取到结果加入注意力推理中。</p>
+<span id="more"></span> 
+
+<p>它与API调用有一点类似，但本质不同，只是一次推理阶段的指令输出，具体动作是后台去调用的依赖第三方的，大模型只是发出指令，获取到结果加入上下文。</p>
+<p><strong>Q1：Function Call 一定要对应一个 API 吗？</strong></p>
+<p>不一定！它可以对应：</p>
+<ul>
+<li>一个 HTTP API（最常见）</li>
+<li>一个数据库查询</li>
+<li>一个本地 Python 函数（如数学计算）</li>
+<li>一个操作系统命令（如 list_files() ）</li>
+</ul>
+<p>只要在系统中 <strong>注册了同名函数</strong> ，LLM 就能“调用”它。</p>
+<table>
+<thead>
+<tr>
+<th align="left">Function Call（LLM 输出）</th>
+<th align="left">对应的 API 调用（系统执行）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><code>{ &quot;name&quot;: &quot;search_web&quot;, &quot;arguments&quot;: { &quot;query&quot;: &quot;最新AI论文&quot; } }</code></td>
+<td align="left"><code>GET https://api.bing.com/v7.0/search?q=最新AI论文</code></td>
+</tr>
+<tr>
+<td align="left"><code>{ &quot;name&quot;: &quot;send_email&quot;, &quot;arguments&quot;: { &quot;to&quot;: &quot;a@example.com&quot;, &quot;body&quot;: &quot;Hello&quot; } }</code></td>
+<td align="left"><code>POST https://api.sendgrid.com/v3/mail/send with auth header</code></td>
+</tr>
+<tr>
+<td align="left"><code>{ &quot;name&quot;: &quot;query_database&quot;, &quot;arguments&quot;: { &quot;sql&quot;: &quot;SELECT * FROM users&quot; } }</code></td>
+<td align="left">内部 JDBC&#x2F;ODBC 调用（不一定是 HTTP，但仍是“外部接口调用”）</td>
+</tr>
+</tbody></table>
+<h2 id="MCP"><a href="#MCP" class="headerlink" title="MCP"></a>MCP</h2><p><strong>MCP（Model Context Protocol）</strong> 是 2024 年由 Anthropic、Databricks、Cohere、LlamaIndex 等多家公司联合提出 的新一代 <strong>模型与工具交互协议</strong> ，旨在 <strong>替代或升级当前主流的 Function Calling（函数调用）机制</strong> 。</p>
+<p>下面从 <strong>背景、核心思想、与 Function Call 的区别、优势、现状</strong> 等方面为你清晰解析 MCP。</p>
+<h3 id="✅-一句话总结-MCP"><a href="#✅-一句话总结-MCP" class="headerlink" title="✅ 一句话总结 MCP"></a>✅ 一句话总结 MCP</h3><p><strong>MCP 是一个标准化的、双向的、支持多模态和流式交互的“模型-工具通信协议”，让 LLM 能像使用操作系统一样动态调用外部能力。</strong></p>
+<h3 id="🔍-一、为什么需要-MCP？——Function-Calling-的局限"><a href="#🔍-一、为什么需要-MCP？——Function-Calling-的局限" class="headerlink" title="🔍 一、为什么需要 MCP？——Function Calling 的局限"></a>🔍 一、为什么需要 MCP？——Function Calling 的局限</h3><p>当前主流的 Function Calling（如 OpenAI Tools、Google Function Calling）存在以下问题：</p>
+<table>
+<thead>
+<tr>
+<th align="left">问题</th>
+<th align="left">说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>单向、一次性</strong></td>
+<td align="left">LLM 输出一个 function call → 系统执行 → 返回结果。无法持续交互（如“翻页”、“追问”）。</td>
+</tr>
+<tr>
+<td align="left"><strong>静态注册</strong></td>
+<td align="left">所有可用工具必须在请求前预定义（ <code>tools=</code> ），无法动态发现新工具。</td>
+</tr>
+<tr>
+<td align="left"><strong>仅限文本</strong></td>
+<td align="left">难以传递图像、音频、结构化数据等多模态内容。</td>
+</tr>
+<tr>
+<td align="left"><strong>无状态</strong></td>
+<td align="left">每次调用都是独立的，无法维护会话状态（如数据库连接、文件句柄）。</td>
+</tr>
+<tr>
+<td align="left"><strong>厂商锁定</strong></td>
+<td align="left">OpenAI、Google、Azure 的格式互不兼容。</td>
+</tr>
+</tbody></table>
+<p>👉 <strong>MCP 就是为解决这些问题而生的通用协议</strong> 。</p>
+<h3 id="二、MCP-的核心设计思想"><a href="#二、MCP-的核心设计思想" class="headerlink" title="二、MCP 的核心设计思想"></a>二、MCP 的核心设计思想</h3><p>MCP 借鉴了 <strong>操作系统和微服务架构</strong> 的理念：</p>
+<table>
+<thead>
+<tr>
+<th align="left">类比</th>
+<th align="left">说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>LLM &#x3D; 用户 &#x2F; 应用程序</strong></td>
+<td align="left">发起请求，消费服务</td>
+</tr>
+<tr>
+<td align="left"><strong>Tools &#x3D; 系统服务 &#x2F; Daemon</strong></td>
+<td align="left">作为独立进程长期运行</td>
+</tr>
+<tr>
+<td align="left"><strong>MCP &#x3D; IPC 机制（如 Unix Socket、gRPC）</strong></td>
+<td align="left">定义标准通信格式</td>
+</tr>
+</tbody></table>
+<h4 id="✨-关键特性："><a href="#✨-关键特性：" class="headerlink" title="✨ 关键特性："></a>✨ 关键特性：</h4><ul>
+<li><strong>双向流式通信（Bidirectional Streaming）</strong><ul>
+<li>LLM 可以发起调用 → 工具返回部分结果 → LLM 再发指令（如“加载下一页”）</li>
+<li>支持实时交互（如代码解释器逐步输出）</li>
+</ul>
+</li>
+<li><strong>动态服务发现（Service Discovery）</strong><ul>
+<li>工具可随时注册&#x2F;注销，LLM 可查询“当前有哪些可用工具”</li>
+</ul>
+</li>
+<li><strong>多模态原生支持</strong><ul>
+<li>可传递文本、图像、表格、二进制数据等</li>
+</ul>
+</li>
+<li><strong>基于标准协议（如 gRPC 或 WebSocket）</strong><ul>
+<li>语言无关，跨平台</li>
+</ul>
+</li>
+<li><strong>上下文感知（Context-Aware）</strong><ul>
+<li>工具可访问当前对话上下文、用户权限等元信息</li>
+</ul>
+</li>
+</ul>
+<h3 id="三、MCP-vs-Function-Call-对比"><a href="#三、MCP-vs-Function-Call-对比" class="headerlink" title="三、MCP vs Function Call 对比"></a>三、MCP vs Function Call 对比</h3><table>
+<thead>
+<tr>
+<th align="left">维度</th>
+<th align="left">传统 Function Call</th>
+<th align="left">MCP</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>通信模式</strong></td>
+<td align="left">请求-响应（Request-Response）</td>
+<td align="left">双向流（Streaming）</td>
+</tr>
+<tr>
+<td align="left"><strong>工具注册</strong></td>
+<td align="left">静态（请求前定义）</td>
+<td align="left">动态（运行时发现）</td>
+</tr>
+<tr>
+<td align="left"><strong>数据类型</strong></td>
+<td align="left">主要 JSON 文本</td>
+<td align="left">多模态（文本、图像、文件等）</td>
+</tr>
+<tr>
+<td align="left"><strong>状态管理</strong></td>
+<td align="left">无状态</td>
+<td align="left">有状态（可维护会话）</td>
+</tr>
+<tr>
+<td align="left"><strong>协议标准</strong></td>
+<td align="left">各家私有（OpenAI&#x2F;Google 格式不同）</td>
+<td align="left">开放标准（社区共建）</td>
+</tr>
+<tr>
+<td align="left"><strong>典型场景</strong></td>
+<td align="left">查天气、发邮件</td>
+<td align="left">代码解释器、数据库探索、实时数据分析</td>
+</tr>
+</tbody></table>
+<h3 id="🌰-四、MCP-工作流程示例"><a href="#🌰-四、MCP-工作流程示例" class="headerlink" title="🌰 四、MCP 工作流程示例"></a>🌰 四、MCP 工作流程示例</h3><p>假设用户说：“分析我上周的销售数据，并画出趋势图。”</p>
+<p><strong>传统 Function Call：</strong></p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line"><span class="comment">// LLM 输出</span></span><br><span class="line"><span class="punctuation">&#123;</span> <span class="attr">&quot;name&quot;</span><span class="punctuation">:</span> <span class="string">&quot;query_sales_db&quot;</span><span class="punctuation">,</span> <span class="attr">&quot;arguments&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span> <span class="attr">&quot;date_range&quot;</span><span class="punctuation">:</span> <span class="string">&quot;last_week&quot;</span> <span class="punctuation">&#125;</span> <span class="punctuation">&#125;</span></span><br><span class="line"><span class="comment">// 系统执行 SQL → 返回 CSV → LLM 生成文字描述</span></span><br><span class="line"><span class="comment">// ❌ 无法直接返回图表！</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="使用-MCP："><a href="#使用-MCP：" class="headerlink" title="使用 MCP："></a>使用 MCP：</h3><p>1.LLM 发现可用工具：sales_analyzer（支持 SQL + 图表生成）<br>2.LLM 通过 MCP 启动 sales_analyzer 会话<br>3.发送指令：QUERY date&#x3D;last_week<br>4.工具返回：一张 PNG 图像 + 摘要文本<br>5.LLM 直接将图像嵌入回复（多模态输出）<br>✅ 实现了端到端的多模态工具调用。</p>
+<h3 id="MCP高效协作的三大机制"><a href="#MCP高效协作的三大机制" class="headerlink" title="MCP高效协作的三大机制"></a>MCP高效协作的三大机制</h3><h4 id="1-二进制流式传输（Binary-Streaming）"><a href="#1-二进制流式传输（Binary-Streaming）" class="headerlink" title="1. 二进制流式传输（Binary Streaming）"></a>1. 二进制流式传输（Binary Streaming）</h4><p>问题：大图像&#x2F;视频直接嵌入 JSON 会导致：</p>
+<ul>
+<li>内存爆炸</li>
+<li>网络延迟高</li>
+<li>Base64 编码膨胀 33%</li>
+<li>MCP 解决方案：</li>
+<li>使用 gRPC 双向流 或 WebSocket 二进制帧</li>
+<li>图像&#x2F;音频以 原始 bytes 分块传输</li>
+<li>示例（Python 伪代码）：</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 工具服务端</span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">Call</span>(<span class="params">self, request_stream</span>):</span><br><span class="line">    <span class="keyword">async</span> <span class="keyword">for</span> chunk <span class="keyword">in</span> request_stream:</span><br><span class="line">        <span class="keyword">if</span> chunk.HasField(<span class="string">&#x27;image_chunk&#x27;</span>):</span><br><span class="line">            buffer.write(chunk.image_chunk)</span><br><span class="line">    <span class="comment"># 处理完整图像</span></span><br><span class="line">    result = vision_model.analyze(buffer.getvalue())</span><br><span class="line">    <span class="keyword">yield</span> ToolResult(image=result.annotated_image) </span><br></pre></td></tr></table></figure>
+
+<h4 id="2-URI-引用机制（避免重复传输）"><a href="#2-URI-引用机制（避免重复传输）" class="headerlink" title="2. URI 引用机制（避免重复传输）"></a>2. URI 引用机制（避免重复传输）</h4><ul>
+<li>对于大文件（如 1GB 视频），MCP 支持传递 URI 而非内容：</li>
+</ul>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;tool_name&quot;</span><span class="punctuation">:</span> <span class="string">&quot;video_analyzer&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;arguments&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">    <span class="punctuation">&#123;</span> <span class="attr">&quot;text&quot;</span><span class="punctuation">:</span> <span class="string">&quot;提取关键帧&quot;</span> <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="punctuation">&#123;</span> <span class="attr">&quot;uri&quot;</span><span class="punctuation">:</span> <span class="string">&quot;file:///tmp/uploaded_video.mp4&quot;</span> <span class="punctuation">&#125;</span>  <span class="comment">// 或 s3://...</span></span><br><span class="line">  <span class="punctuation">]</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>工具直接从本地&#x2F;云存储读取，零网络开销</li>
+</ul>
+<h4 id="3-上下文绑定（Context-Aware-Multimodality）"><a href="#3-上下文绑定（Context-Aware-Multimodality）" class="headerlink" title="3. 上下文绑定（Context-Aware Multimodality）"></a>3. 上下文绑定（Context-Aware Multimodality）</h4><p>MCP 消息携带 会话上下文 ID，使工具能：</p>
+<ul>
+<li>关联历史多模态输入（如“对比上一张图”）</li>
+<li>维护状态（如视频逐帧分析）</li>
+<li>示例：</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 工具内部</span></span><br><span class="line">session = get_session(context_id)</span><br><span class="line"><span class="keyword">if</span> <span class="string">&quot;previous_image&quot;</span> <span class="keyword">in</span> session:</span><br><span class="line">    diff = compare(session[<span class="string">&quot;previous_image&quot;</span>], new_image)</span><br></pre></td></tr></table></figure>
+
+<h2 id="SKILL"><a href="#SKILL" class="headerlink" title="SKILL"></a>SKILL</h2><h3 id="一、Skill-是什么？——本质定义"><a href="#一、Skill-是什么？——本质定义" class="headerlink" title="一、Skill 是什么？——本质定义"></a>一、Skill 是什么？——本质定义</h3><p>Skill 是一个封装了完整业务逻辑的、可复用的、面向任务的能力模块。<br>它代表 LLM “能做什么”，而不是“怎么调用”。</p>
+<h3 id="二、快速理解"><a href="#二、快速理解" class="headerlink" title="二、快速理解"></a>二、快速理解</h3><p>Skill 是一个封装了端到端业务逻辑的能力单元。它可以通过两种方式被 LLM 使用：<br>1.静态注册模式：将其元信息（名称、描述、参数）注入 LLM 上下文，LLM 通过 Function Call 触发，由本地 Orchestrator 执行；<br>2.动态服务模式：将其暴露为 MCP 兼容的服务，LLM 通过标准协议直接与 Skill 通信，实现松耦合、可扩展的智能体架构。<br>无论哪种模式，LLM 只负责“决策是否调用”，不参与实际 API 执行。</p>
+<p>Skill 是一个 能力单元 的封装，它包含：</p>
+<ul>
+<li>输入解析（如何从自然语言提取参数）</li>
+<li>业务逻辑（可能调用 1~N 个内部&#x2F;外部 API）</li>
+<li>输出生成（返回 LLM 可直接使用的自然语言）</li>
+<li>错误处理、日志、配置等非功能需求</li>
+<li>它通常以 类（Class）或微服务（Service） 形式存在，而不仅是“文件”。<br>📌 Skill ≠ 单个函数，而是 端到端任务流水线。</li>
+</ul>
+<h3 id="三、Skill-与-Function-Call-MCP-的关系"><a href="#三、Skill-与-Function-Call-MCP-的关系" class="headerlink" title="三、Skill 与 Function Call &#x2F; MCP 的关系"></a>三、Skill 与 Function Call &#x2F; MCP 的关系</h3><p>组件角色Skill 如何使用它Function CallLLM 的输出格式Skill 的name必须与 Function Call 的name一致，才能被触发MCP新一代通信协议Skill 可作为 MCP 服务长期运行，通过流式接口提供能力API 调用底层执行动作Skill 内部可包含 1~N 个 API 调用</p>
+<p>🏗️ 四、主流框架中的 Skill 实现</p>
+<ol>
+<li>Semantic Kernel（微软）——最规范的 Skill 设计</li>
+</ol>
+<ul>
+<li>Skill &#x3D; 文件夹</li>
+<li>Function &#x3D; 文件中的方法</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">Skills/</span><br><span class="line">├── EmailSkill/</span><br><span class="line">│   ├── send_email.py   <span class="comment"># function: send</span></span><br><span class="line">│   └── read_email.py   <span class="comment"># function: read</span></span><br><span class="line">└── CalendarSkill/</span><br><span class="line">    └── create_event.py <span class="comment"># function: create</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>注册后，LLM 可调用 EmailSkill.send 或 CalendarSkill.create<br>✅ 优势：天然支持命名空间、版本管理、依赖注入</li>
+</ul>
+<hr>
+<h3 id="2-LangChain-——-用-Tool-模拟-Skill"><a href="#2-LangChain-——-用-Tool-模拟-Skill" class="headerlink" title="2. LangChain —— 用 Tool 模拟 Skill"></a>2. LangChain —— 用 Tool 模拟 Skill</h3><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> langchain.tools <span class="keyword">import</span> tool</span><br><span class="line"></span><br><span class="line"><span class="meta">@tool</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">weather_forecast</span>(<span class="params">city: <span class="built_in">str</span></span>) -&gt; <span class="built_in">str</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;获取天气预报&quot;&quot;&quot;</span></span><br><span class="line">    <span class="comment"># ... 实现逻辑</span></span><br><span class="line">    <span class="keyword">return</span> result</span><br></pre></td></tr></table></figure>
+<ul>
+<li>每个 @tool 函数 ≈ 一个轻量级 Skill</li>
+<li>复杂 Skill 需组合多个 tools + 自定义 Agent</li>
+</ul>
+<hr>
+<h3 id="3-LlamaIndex-——-Skill-作为-Query-Engine"><a href="#3-LlamaIndex-——-Skill-作为-Query-Engine" class="headerlink" title="3. LlamaIndex —— Skill 作为 Query Engine"></a>3. LlamaIndex —— Skill 作为 Query Engine</h3><figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> llama_index.core.tools <span class="keyword">import</span> FunctionTool</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">run_weather_skill</span>(<span class="params">query: <span class="built_in">str</span></span>) -&gt; <span class="built_in">str</span>:</span><br><span class="line">    <span class="comment"># 完整业务逻辑</span></span><br><span class="line">    <span class="keyword">pass</span></span><br><span class="line"></span><br><span class="line">weather_tool = FunctionTool.from_defaults(</span><br><span class="line">    fn=run_weather_skill,</span><br><span class="line">    name=<span class="string">&quot;weather_forecast&quot;</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<ul>
+<li>支持将整个 RAG pipeline 封装为一个 Skill</li>
+</ul>
+<hr>
+<h3 id="4-MCP-时代-——-Skill-升级为独立服务"><a href="#4-MCP-时代-——-Skill-升级为独立服务" class="headerlink" title="4. MCP 时代 —— Skill 升级为独立服务"></a>4. MCP 时代 —— Skill 升级为独立服务</h3><figure class="highlight yaml"><table><tr><td class="code"><pre><span class="line"><span class="comment"># mcp-server-weather.yaml</span></span><br><span class="line"><span class="attr">name:</span> <span class="string">weather_forecast</span></span><br><span class="line"><span class="attr">transport:</span> <span class="string">grpc</span></span><br><span class="line"><span class="attr">capabilities:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">streaming</span></span><br><span class="line">  <span class="bullet">-</span> <span class="string">multimodal</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>Skill 作为独立进程运行</li>
+<li>通过 MCP 协议与 LLM 通信</li>
+<li>支持动态发现、热更新<br>🌟 未来趋势：Skill &#x3D; 微服务，MCP &#x3D; 服务网格</li>
+</ul>
+<h3 id="五、什么时候该用-Skill？"><a href="#五、什么时候该用-Skill？" class="headerlink" title="五、什么时候该用 Skill？"></a>五、什么时候该用 Skill？</h3><table>
+<thead>
+<tr>
+<th align="left">场景</th>
+<th align="left">是否需要 Skill</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">简单工具调用（查天气、搜网页）</td>
+<td align="left">❌ 直接用 Function Call + 单函数即可</td>
+</tr>
+<tr>
+<td align="left">多步骤任务（订机票&#x3D;查+比+付）</td>
+<td align="left">✅ 必须封装为 Skill</td>
+</tr>
+<tr>
+<td align="left">需要状态维护（数据库会话）</td>
+<td align="left">✅ Skill 可持有连接池</td>
+</tr>
+<tr>
+<td align="left">能力复用（多个 Agent 共享）</td>
+<td align="left">✅ 抽象为 Skill 模块</td>
+</tr>
+<tr>
+<td align="left">需要单元测试&#x2F;监控</td>
+<td align="left">✅ Skill 是天然的测试单元</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="💡-六、最佳实践建议"><a href="#💡-六、最佳实践建议" class="headerlink" title="💡 六、最佳实践建议"></a>💡 六、最佳实践建议</h3><p>1.命名规范：{domain}_{action}，如 email_send, calendar_create<br>2.输入输出标准化：尽量返回自然语言（非 JSON），便于 LLM 理解<br>3.错误处理：捕获异常并转化为用户友好提示<br>4.可观测性：记录 Skill 调用日志（用于分析 LLM 行为）<br>5.安全边界：Skill 是权限控制的关键点（如“不能删除邮件”）</p>
+]]></content>
+      <tags>
+        <tag>agent</tag>
+      </tags>
+  </entry>
 </search>

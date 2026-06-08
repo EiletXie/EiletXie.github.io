@@ -5439,8 +5439,7 @@
 <li>它通常以 类（Class）或微服务（Service） 形式存在，而不仅是“文件”。<br>📌 Skill ≠ 单个函数，而是 端到端任务流水线。</li>
 </ul>
 <h3 id="三、Skill-与-Function-Call-MCP-的关系"><a href="#三、Skill-与-Function-Call-MCP-的关系" class="headerlink" title="三、Skill 与 Function Call &#x2F; MCP 的关系"></a>三、Skill 与 Function Call &#x2F; MCP 的关系</h3><p>组件角色Skill 如何使用它Function CallLLM 的输出格式Skill 的name必须与 Function Call 的name一致，才能被触发MCP新一代通信协议Skill 可作为 MCP 服务长期运行，通过流式接口提供能力API 调用底层执行动作Skill 内部可包含 1~N 个 API 调用</p>
-<p>🏗️ 四、主流框架中的 Skill 实现</p>
-<ol>
+<h3 id="🏗️-四、主流框架中的-Skill-实现"><a href="#🏗️-四、主流框架中的-Skill-实现" class="headerlink" title="🏗️ 四、主流框架中的 Skill 实现"></a>🏗️ 四、主流框架中的 Skill 实现</h3><ol>
 <li>Semantic Kernel（微软）——最规范的 Skill 设计</li>
 </ol>
 <ul>
@@ -5503,5 +5502,186 @@
       <tags>
         <tag>agent</tag>
       </tags>
+  </entry>
+  <entry>
+    <title>企业智能数据AI落地实战：从POC到生产</title>
+    <url>/2026/06/08/%E4%BC%81%E4%B8%9A%E6%99%BA%E8%83%BD%E6%95%B0%E6%8D%AEAI%E8%90%BD%E5%9C%B0%E5%AE%9E%E6%88%98%EF%BC%9A%E4%BB%8EPOC%E5%88%B0%E7%94%9F%E4%BA%A7/</url>
+    <content><![CDATA[<h1 id="企业智能数据AI落地实战：从POC到生产"><a href="#企业智能数据AI落地实战：从POC到生产" class="headerlink" title="企业智能数据AI落地实战：从POC到生产"></a>企业智能数据AI落地实战：从POC到生产</h1><blockquote>
+<p>结合埃及商城智能数仓POC的真实踩坑经验，系统梳理企业级智能问数从方案设计到落地的完整路径。</p>
+</blockquote>
+<hr>
+<h2 id="一、先想清楚三件事"><a href="#一、先想清楚三件事" class="headerlink" title="一、先想清楚三件事"></a>一、先想清楚三件事</h2><p>很多团队做智能问数，一上来就选模型、搭架构，这是最大的坑。在写第一行代码之前，有三个问题必须先回答。</p>
+<h3 id="1-1-这玩意到底给谁用？"><a href="#1-1-这玩意到底给谁用？" class="headerlink" title="1.1 这玩意到底给谁用？"></a>1.1 这玩意到底给谁用？</h3><p>不同角色的需求完全不同：</p>
+<ul>
+<li><strong>老板&#x2F;领导层</strong>不看明细数据，他们看的是看板和报告。演示Demo时领导突然说”能不能直接输出一整个Dashboard”，这个功能跟AI没什么关系，但很容易让整个项目走向失控。</li>
+<li><strong>一线业务人员</strong>80%的query集中在20%的库表和指标上，符合二八原则。他们问数据的本质是月报、周报这类固定动作，或者临时查一个指标。</li>
+<li><strong>一线数据分析师</strong>才是真正每天有大量、随机、新需求的人。</li>
+</ul>
+<p>那些成功落地的项目，一开始就把产品定位成<strong>分析师辅助工具</strong>，而不是”全员AI数据转型”。定位准了之后，下面所有决策都顺：</p>
+<ol>
+<li>分析师懂SQL，可以把生成的SQL暴露出来让他们自己判断</li>
+<li>分析师能接受不那么自然的输入方式</li>
+<li>分析师能容忍偶尔出错，因为他们自己也会写错SQL</li>
+<li>分析师对产品逻辑的理解速度远快于非技术背景的人</li>
+</ol>
+<p><strong>核心教训：懂相关逻辑的人，对产品的容忍度比不懂的人高得多。</strong> 如果定位是”让全员都能问数据”，某个同事第一次问得不对，被错误结果坑了一次，就再也不会打开第二次。这个信任问题一旦出现，几乎不可能修补。</p>
+<h3 id="1-2-解决什么问题？不解决什么问题？"><a href="#1-2-解决什么问题？不解决什么问题？" class="headerlink" title="1.2 解决什么问题？不解决什么问题？"></a>1.2 解决什么问题？不解决什么问题？</h3><p>我们当时埃及商城的场景很明确：运营商业务（套餐、账单、工单），业务方每天被”查一下某某用户套餐余额””上个月流量排行前10””这个工单当前状态”这类重复性问题淹没。目标不是替代数据分析师，而是<strong>把80%的高频、简单、重复性查询自动化掉</strong>，让数据团队从无穷无尽的提数需求里解放出来。</p>
+<h3 id="1-3-你能投入多少？"><a href="#1-3-你能投入多少？" class="headerlink" title="1.3 你能投入多少？"></a>1.3 你能投入多少？</h3><p>我们在华为期间做这个POC是探索性质，资源有限，所以技术选型上刻意倾向”能用就行”而非”大而全”。如果有预算做完整落地，要做好思想准备：<strong>数据治理占70%的工作量，AI本身只占30%。</strong></p>
+<hr>
+<h2 id="二、技术路线：最关键的架构决策"><a href="#二、技术路线：最关键的架构决策" class="headerlink" title="二、技术路线：最关键的架构决策"></a>二、技术路线：最关键的架构决策</h2><p>在讲Schema Linking、Agent架构这些细节之前，必须先把一件事挑明：<strong>智能问数有两条技术路线，它们的可靠性逻辑完全不同。</strong></p>
+<h3 id="2-1-Text-to-Metrics-vs-Text-to-SQL"><a href="#2-1-Text-to-Metrics-vs-Text-to-SQL" class="headerlink" title="2.1 Text to Metrics vs Text to SQL"></a>2.1 Text to Metrics vs Text to SQL</h3><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>Text to Metrics</th>
+<th>Text to SQL</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>本质</td>
+<td>提前固化可信查询，AI只做意图理解和参数填充</td>
+<td>AI现场从Schema推理出查询</td>
+</tr>
+<tr>
+<td>可靠性来源</td>
+<td>离线已做好的指标定义、口径确认、SQL验证</td>
+<td>完全依赖在线推理</td>
+</tr>
+<tr>
+<td>出错空间</td>
+<td>极小，AI只需从有限的治理好的指标空间里选</td>
+<td>每一步都有出错概率，错误还会累积</td>
+</tr>
+<tr>
+<td>适用场景</td>
+<td>高频、高确定性的查询</td>
+<td>长尾、低频、临时的查询</td>
+</tr>
+</tbody></table>
+<p><strong>能用Metrics解决的问题去用SQL解决，等于把一个已经验证过的确定性问题重新降级成概率问题，这是反向的。</strong></p>
+<h3 id="2-2-正确的架构：分层兜底"><a href="#2-2-正确的架构：分层兜底" class="headerlink" title="2.2 正确的架构：分层兜底"></a>2.2 正确的架构：分层兜底</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">┌─────────────────────────────────────────┐</span><br><span class="line">│ 用户输入                                 │</span><br><span class="line">├─────────────────────────────────────────┤</span><br><span class="line">│ 第1层：Text to Metrics（80%查询）        │</span><br><span class="line">│ 命中已治理指标 → 直接返回，可靠性≈100%   │</span><br><span class="line">├─────────────────────────────────────────┤</span><br><span class="line">│ 第2层：历史SQL缓存                       │</span><br><span class="line">│ 语义相近的历史查询 → Few-shot改写        │</span><br><span class="line">├─────────────────────────────────────────┤</span><br><span class="line">│ 第3层：Text to SQL（20%查询）            │</span><br><span class="line">│ Schema Linking + LLM生成SQL，标注&quot;未经验证&quot;│</span><br><span class="line">├─────────────────────────────────────────┤</span><br><span class="line">│ 第4层：降级回复 + 反馈治理团队            │</span><br><span class="line">└─────────────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<p>整个智能问数项目的核心工作，本质上就是<strong>不断扩大Text to Metrics能覆盖的范围，压缩Text to SQL需要兜底的长尾。</strong></p>
+<hr>
+<h2 id="三、数据治理：占70-工作量，也决定70-效果"><a href="#三、数据治理：占70-工作量，也决定70-效果" class="headerlink" title="三、数据治理：占70%工作量，也决定70%效果"></a>三、数据治理：占70%工作量，也决定70%效果</h2><p>无论是学术界前沿还是工业界落地，所谓AI数据助理的挑战，绝大多数其实是数据本身的问题：表关系复杂、字段命名晦涩、同一概念跨系统编码不一致、业务术语在不同部门含义不同。<strong>这些没有一个是模型能解决的。</strong></p>
+<p>这一步要做的事情可以归成四类：</p>
+<h3 id="3-1-元数据与字段语义"><a href="#3-1-元数据与字段语义" class="headerlink" title="3.1 元数据与字段语义"></a>3.1 元数据与字段语义</h3><p>像<code>a1</code>、<code>f_amt_1</code>、<code>status_code</code>这种字段，必须重新标注业务别名，写清楚字段含义、单位、取值范围、枚举值的业务解释。<code>status = 3</code>到底是已发货还是已退款？业务方清楚，但数据库Schema里没写，AI肯定搞不懂。</p>
+<h3 id="3-2-表关系与跨系统编码对齐"><a href="#3-2-表关系与跨系统编码对齐" class="headerlink" title="3.2 表关系与跨系统编码对齐"></a>3.2 表关系与跨系统编码对齐</h3><p>表之间的关联关系必须显式画出来：主键、外键、JOIN条件、关联粒度。跨系统编码对齐是最容易踩坑的地方——客户在CRM里是<code>cust_id</code>，订单系统里是<code>customer_no</code>，会员系统里是<code>member_id</code>，这三套编码必须有一张明确的映射表。否则AI生成的JOIN跑出来的数字看着对，其实全是错的。<strong>这种错最可怕，因为没人会怀疑。</strong></p>
+<h3 id="3-3-业务术语与同义词词典"><a href="#3-3-业务术语与同义词词典" class="headerlink" title="3.3 业务术语与同义词词典"></a>3.3 业务术语与同义词词典</h3><p>销售部叫”客户”，市场部叫”用户”，运营部叫”会员”，CRM里叫”联系人”——这四个词可能指同一拨人，也可能指完全不同的四拨人。这种事只有业务方说了算。需要逐条建立：</p>
+<ul>
+<li><strong>业务术语对照</strong>：GMV、净客单、动销率、复购分别对应哪几张表、哪几个字段</li>
+<li><strong>同义词与缩写映射</strong>：BRIC国家、MTD&#x2F;QTD&#x2F;YTD等</li>
+<li><strong>实体消歧</strong>：上海分公司是注册地在上海的法人实体，还是华东大区的上海片区？</li>
+</ul>
+<h3 id="3-4-指标平台与公式化知识库"><a href="#3-4-指标平台与公式化知识库" class="headerlink" title="3.4 指标平台与公式化知识库"></a>3.4 指标平台与公式化知识库</h3><p>这是Text to Metrics能不能跑起来的根基。每个核心指标必须有唯一定义：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">指标名：活跃用户</span><br><span class="line">口径v1（市场部）：过去30天打开过App</span><br><span class="line">口径v2（运营部）：过去7天有下单或加购</span><br><span class="line">口径v3（财务部）：过去90天有过付费行为</span><br><span class="line">默认口径：v1</span><br></pre></td></tr></table></figure>
+
+<p>AI接到”上个月活跃用户多少”这种问题，先去指标平台查这个词的定义，明确口径之后再生成查询。检测到多个口径时要么按默认走，要么反问用户。</p>
+<p>此外公式库还得覆盖：计算公式（毛利率的精确公式）、业务规则常识（工作日按什么日历）、时间口径（”最近一周”是滚动7天还是自然周）、业务范围定义（”核心客户”的可计算标准）。</p>
+<h3 id="3-5-如何让AI用上这些知识"><a href="#3-5-如何让AI用上这些知识" class="headerlink" title="3.5 如何让AI用上这些知识"></a>3.5 如何让AI用上这些知识</h3><p>技术实现其实就是RAG那一套：</p>
+<ul>
+<li><strong>双索引混合召回</strong>：向量库负责语义相似度（”赚多少钱”→毛利率公式），关键词倒排索引负责精确匹配（”BRIC”→BRIC缩写映射）</li>
+<li><strong>知识可信度分层</strong>：业务方签字确认的标A级，从历史SQL里挖出来的标B级，AI自己推断的标C级。检索时优先返A级，C级只在兜底时用，且要提示”此口径未经业务确认”</li>
+</ul>
+<h3 id="为什么这一步真的难？"><a href="#为什么这一步真的难？" class="headerlink" title="为什么这一步真的难？"></a>为什么这一步真的难？</h3><p>技术实现不难，<strong>难的是知识本身从哪来。</strong> 业务术语词典要业务负责人逐条确认，他没空。指标口径要财务、销售、运营三方对齐，他们对不齐，因为对齐了就意味着以后谁也不能私下改口径。这一步本质上不是AI项目，是数据治理项目，更是组织协同项目。预算和工期的70%花在这里，一点都不夸张。</p>
+<hr>
+<h2 id="四、实战案例：埃及商城智能数仓POC"><a href="#四、实战案例：埃及商城智能数仓POC" class="headerlink" title="四、实战案例：埃及商城智能数仓POC"></a>四、实战案例：埃及商城智能数仓POC</h2><h3 id="4-1-项目背景"><a href="#4-1-项目背景" class="headerlink" title="4.1 项目背景"></a>4.1 项目背景</h3><ul>
+<li><strong>业务场景</strong>：埃及运营商商城，用户量1300万+，业务方大量重复性数据查询需求</li>
+<li><strong>POC目标</strong>：验证”自然语言查询业务数据”在运营商场景下的可行性</li>
+<li><strong>典型Query</strong>：”查一下用户xxx的套餐余额”、”上个月流量使用排行”、”工单WT001当前处理状态”</li>
+</ul>
+<h3 id="4-2-技术架构"><a href="#4-2-技术架构" class="headerlink" title="4.2 技术架构"></a>4.2 技术架构</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">用户输入（自然语言）</span><br><span class="line">    │</span><br><span class="line">    ▼</span><br><span class="line">┌──────────────┐</span><br><span class="line">│ 意图识别     │ ← LangGraph编排</span><br><span class="line">│ 关键词提取   │</span><br><span class="line">└──────┬───────┘</span><br><span class="line">       │</span><br><span class="line">       ▼</span><br><span class="line">┌──────────────┐     ┌──────────────┐</span><br><span class="line">│ Qdrant向量库 │────▶│ ElasticSearch │  双路混合召回</span><br><span class="line">│ Schema语义匹配│     │ 关键词精确匹配 │</span><br><span class="line">└──────┬───────┘     └──────┬───────┘</span><br><span class="line">       │                    │</span><br><span class="line">       └────────┬───────────┘</span><br><span class="line">                ▼</span><br><span class="line">┌──────────────────────────────┐</span><br><span class="line">│ LLM (GPT)                    │</span><br><span class="line">│ 结合Schema + 用户上下文       │</span><br><span class="line">│ 生成安全SQL（含注入校验）     │</span><br><span class="line">└──────────────┬───────────────┘</span><br><span class="line">               ▼</span><br><span class="line">┌──────────────────────────────┐</span><br><span class="line">│ MySQL执行 → 结果表格返回      │</span><br><span class="line">└──────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-3-核心设计决策"><a href="#4-3-核心设计决策" class="headerlink" title="4.3 核心设计决策"></a>4.3 核心设计决策</h3><p><strong>为什么选Qdrant？</strong><br>向量数据库选型时对比了Milvus和Chroma。Qdrant的优势在于：Rust实现性能好，单机部署简单（POC阶段不需要分布式），API设计干净。对于POC阶段的Schema向量化存储完全够用。</p>
+<p><strong>为什么用LangGraph而不是LangChain？</strong><br>LangGraph的状态图模型更适合多步骤推理——用户问”对比一下用户A和用户B上个月的流量使用情况”，需要先查A的用量、再查B的用量、最后做对比。LangGraph可以显式定义这个工作流，每个节点职责清晰，出问题好定位。</p>
+<p><strong>ElasticSearch的角色？</strong><br>做关键词倒排索引。很多业务术语（如套餐名”Super 500”、工单类型”Fault”）用向量相似度匹配效果很差，必须上精确匹配。ES和Qdrant是互补关系。</p>
+<h3 id="4-4-踩过的坑"><a href="#4-4-踩过的坑" class="headerlink" title="4.4 踩过的坑"></a>4.4 踩过的坑</h3><p><strong>坑1：多表关联的Schema选择</strong><br>运营商场景里，用户一张表、套餐一张表、账单一张表、工单一张表，很多query天然需要跨表JOIN。问题在于，把全库Schema塞给LLM效果稀烂——几百个字段的噪声让模型乱选表。后来做了Schema Linking的前置筛选（详见第五节），准确率才上去。</p>
+<p><strong>坑2：SQL安全校验</strong><br>绝对不能信任LLM生成的SQL。我们加了两道防线：AST解析过滤DDL&#x2F;DML语句，以及数据库只读账号。这是最便宜也最有效的一道防线。</p>
+<p><strong>坑3：业务口径漂移</strong><br>“活跃用户”在套餐场景里可能指”过去30天有使用记录”，在工单场景里可能指”过去7天有提交工单”。同一个词在不同上下文里含义完全不同。后来做了上下文感知的指标消歧——根据用户所在的页面&#x2F;模块自动选择默认口径。</p>
+<hr>
+<h2 id="五、Schema-Linking：长尾查询的兜底方案"><a href="#五、Schema-Linking：长尾查询的兜底方案" class="headerlink" title="五、Schema Linking：长尾查询的兜底方案"></a>五、Schema Linking：长尾查询的兜底方案</h2><p>很多人以为大模型上下文窗口大了，可以把整个数据库Schema都塞进去。我试过，效果稀烂。原因很简单：企业数据库随便一个库就是几百张表、上千个字段，全塞进去token爆炸不说，无关Schema对模型就是噪声。</p>
+<p><strong>Schema Linking必须做。</strong></p>
+<h3 id="5-1-两种范式"><a href="#5-1-两种范式" class="headerlink" title="5.1 两种范式"></a>5.1 两种范式</h3><p><strong>范式A：多阶段Pipeline（CHESS风格）</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">用户Query → 关键词抽取 → 实体检索（具体取值）</span><br><span class="line">                        → 上下文检索（字段描述、业务文档）</span><br><span class="line">              ↓</span><br><span class="line">        候选证据池</span><br><span class="line">              ↓</span><br><span class="line">        Column Filtering（粗筛字段）</span><br><span class="line">              ↓</span><br><span class="line">        Table Selection（选表）</span><br><span class="line">              ↓</span><br><span class="line">        Column Selection（精挑列）</span><br><span class="line">              ↓</span><br><span class="line">        Selected Schema → 拼入SQL生成Prompt</span><br></pre></td></tr></table></figure>
+
+<p>优点：流程清晰、每步职责单一、出问题好定位。缺点：LLM调用次数多，延迟和成本不低。</p>
+<p><strong>范式B：Selector Agent（MAC-SQL风格）</strong></p>
+<p>由专门的Selector Agent负责Schema筛选，有两个值得借鉴的设计：</p>
+<ul>
+<li><strong>按需触发</strong>：只有当Schema Prompt长度超过阈值才启动。小Schema直接整个塞进去反而更省token——非常务实的工程选择。</li>
+<li><strong>结构化输出协议</strong>：输出必须JSON，<code>keep_all</code>整表保留，<code>drop_all</code>整表丢掉，列出列名表示只保留这些列。结果可被下游Agent直接消费。</li>
+</ul>
+<p>一个关键数据：去掉Selector后，简单查询准确率完全没掉（65.73%→65.73%），但困难查询从40.28%掉到35.14%。<strong>Schema Linking对简单查询基本没用，但对复杂多表JOIN场景贡献显著。</strong></p>
+<h3 id="5-2-我们POC中的落地做法"><a href="#5-2-我们POC中的落地做法" class="headerlink" title="5.2 我们POC中的落地做法"></a>5.2 我们POC中的落地做法</h3><p>综合两种范式，我们做了简化版：</p>
+<ol>
+<li>先用ElasticSearch从用户Query中抽取关键词</li>
+<li>去Qdrant里检索语义相关的表和字段（向量相似度Top-K）</li>
+<li>去ES里做关键词精确匹配（字段名&#x2F;注释&#x2F;枚举值）</li>
+<li>合并结果，按相关度排序，取Top-N（表≤5张，每表字段≤6个）</li>
+<li>把这个子集拼到生成SQL的Prompt里</li>
+</ol>
+<p>效果：token消耗降低约60%，复杂查询准确率提升明显。</p>
+<p><strong>边界提醒：Schema Linking再准，也只解决”找哪些表哪些字段”的问题，解决不了业务口径问题。</strong> 活跃用户该用哪张表Selector能选对，但”活跃”是7天还是30天，得靠第三节的指标平台回答。两件事缺一不可。</p>
+<hr>
+<h2 id="六、Agent：什么时候用，什么时候不用"><a href="#六、Agent：什么时候用，什么时候不用" class="headerlink" title="六、Agent：什么时候用，什么时候不用"></a>六、Agent：什么时候用，什么时候不用</h2><p>Agent适合”需要多步骤、多工具、不确定后续路径”的任务，但企业内部问数里，符合这个画像的query不到两成。</p>
+<h3 id="6-1-按复杂度分流"><a href="#6-1-按复杂度分流" class="headerlink" title="6.1 按复杂度分流"></a>6.1 按复杂度分流</h3><p>先做一个轻量级分类：</p>
+<table>
+<thead>
+<tr>
+<th>难度</th>
+<th>特征</th>
+<th>比例</th>
+<th>策略</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Easy</td>
+<td>单表、单条件、简单聚合</td>
+<td>~60%</td>
+<td>Metrics缓存或Few-shot直接生成SQL</td>
+</tr>
+<tr>
+<td>Medium</td>
+<td>2-3张表、需要JOIN</td>
+<td>~25%</td>
+<td>Decomposition + CoT拆解</td>
+</tr>
+<tr>
+<td>Hard</td>
+<td>4+张表、嵌套子查询、需中间结果验证</td>
+<td>~15%</td>
+<td>Plan-and-Execute Agent</td>
+</tr>
+</tbody></table>
+<p>Easy档优先走两条快路：命中Metrics缓存直接返回（模型都不调），或者In-Context Learning + few-shot一次性生成SQL。</p>
+<p>Medium档用Decomposition + CoT：先把问题拆成几个子问题，每步子问题对应一段简单SQL，最后拼起来。MAC-SQL的实验数据表明，去掉Decomposer后简单查询准确率几乎不变，但困难查询掉5个百分点以上。</p>
+<p>Hard档才是真正该上Agent的场景——比如”上个月华东区销量异常下滑，帮我分析下原因”，需要先拉数据看趋势、再分维度下钻、再做归因，每一步都要看上一步结果决定下一步怎么走。</p>
+<h3 id="6-2-中间表示（IR）技巧"><a href="#6-2-中间表示（IR）技巧" class="headerlink" title="6.2 中间表示（IR）技巧"></a>6.2 中间表示（IR）技巧</h3><p>直接让LLM生成SQL，它要同时考虑JOIN ON子句、表别名、字段限定、GROUP BY对齐——错一个地方整条SQL就废了。</p>
+<p>一个见效很快的做法：让模型先生成<strong>简化版的中间表示</strong>，再用确定性规则翻译成可执行SQL。比如NatSQL把JOIN ON、FROM子句这些”机械但容易出错”的部分省掉，让模型只关注业务语义。实验数据：用NatSQL后，带JOIN的查询准确率从69.1%提到76.7%。</p>
+<h3 id="6-3-不要过度工程化"><a href="#6-3-不要过度工程化" class="headerlink" title="6.3 不要过度工程化"></a>6.3 不要过度工程化</h3><p>很多团队一上来就搞多Agent流水线，结果95%的简单查询都被迫付出多次LLM调用的代价。正确的做法是：<strong>Agent只给那不到20%真正需要的查询用，剩下80%走快路。</strong> 复杂度分流不是为了炫技，是因为简单查询根本不需要Agent，复杂查询又必须有Agent。</p>
+<hr>
+<h2 id="七、安全兜底与上线评估"><a href="#七、安全兜底与上线评估" class="headerlink" title="七、安全兜底与上线评估"></a>七、安全兜底与上线评估</h2><h3 id="7-1-五道安全防线"><a href="#7-1-五道安全防线" class="headerlink" title="7.1 五道安全防线"></a>7.1 五道安全防线</h3><p>这是POC阶段就可以做到、生产环境必须做到的事：</p>
+<ol>
+<li><strong>只读账号</strong>：AI用的数据库账号必须只读，DDL和DML全部砍掉。最便宜最有效。</li>
+<li><strong>SQL白名单过滤</strong>：生成SQL过一遍AST解析，发现DROP&#x2F;DELETE&#x2F;UPDATE&#x2F;TRUNCATE直接拒绝。</li>
+<li><strong>行数上限</strong>：所有查询自动加LIMIT，避免一句”查所有用户”把库拉爆。</li>
+<li><strong>敏感字段管控</strong>：手机号、身份证、薪资等字段要么脱敏要么直接禁止查询。</li>
+<li><strong>审计日志</strong>：每次查询记录谁、什么时间、问了什么、生成什么SQL、执行结果，方便事后追溯。</li>
+</ol>
+<h3 id="7-2-投票机制"><a href="#7-2-投票机制" class="headerlink" title="7.2 投票机制"></a>7.2 投票机制</h3><p>两个模型各跑一遍，结果一致才执行，不一致让用户来选。听起来土，但能把幻觉率从8%压到0.5%。代价是token翻倍，但企业内部场景这个钱花得起。</p>
+<h3 id="7-3-分三层评估，别拿50条测试用例就敢上线"><a href="#7-3-分三层评估，别拿50条测试用例就敢上线" class="headerlink" title="7.3 分三层评估，别拿50条测试用例就敢上线"></a>7.3 分三层评估，别拿50条测试用例就敢上线</h3><p><strong>第一层：Benchmark测试。</strong> 用Spider、BIRD这种公开数据集测基础能力，知道模型本身天花板在哪。准确率参考意义不大，但能排除明显不能用的方案。</p>
+<p><strong>第二层：业务样本测试。</strong> 跟每个业务部门要50-100条真实想问的问题，覆盖所有口径、部门、典型场景。这一关过了才能进POC。</p>
+<p><strong>第三层：灰度上线。</strong> 选一个你最熟最好说话的部门先上，看实际使用一周的准确率。这一步通常会比第二层掉10-20个百分点，因为真实用户的提问方式永远比你预想的奇怪。</p>
+<p>特别注意<strong>查询变体</strong>测试：同一个问题用不同方式问，AI能不能给出一致答案。不同部门对同一件事的表达差异巨大，POC阶段只测一种问法，上线立马露馅。</p>
+<hr>
+<h2 id="八、总结"><a href="#八、总结" class="headerlink" title="八、总结"></a>八、总结</h2><p>回到最核心的判断：<strong>智能问数不是AI项目，是数据治理项目。AI只是挂在上面的一个入口。</strong></p>
+<p>这7步里，真正AI的部分只有Schema Linking（第四节）和Agent分流（第五节），剩下的全是产品定位、数据工程、运维安全。框架可以通用（Schema Linking策略、生成策略、投票机制、安全护栏），内容必须定制（语义层、指标定义、字段映射、业务口径）。</p>
+<p>那些号称”开箱即用”的企业AI数据助理，要么定位特别窄（只做某个垂直行业的标准化场景），要么就是PPT产品，落不了地。</p>
+<p>我们的POC验证了一条可行路径：<strong>用治理把高频查询尽可能搬到Text to Metrics层，让Text to SQL只兜长尾。</strong> 这条路线想清楚了，剩下的都是工程问题。想不清楚，技术再花哨也救不回来。</p>
+<hr>
+<blockquote>
+<p><strong>参考</strong>：<a href="http://eiletxie.github.io/">eiletxie.github.io</a> — 持续记录Java性能优化与AI工程化实践。</p>
+</blockquote>
+]]></content>
   </entry>
 </search>
